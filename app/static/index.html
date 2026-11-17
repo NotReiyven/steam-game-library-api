@@ -472,15 +472,16 @@ function formatHours(min) {
 
 /* Summary */
 function renderSummary() {
-  const all = state.all;
+  const all = state.all || [];
   const owned = all.filter(g => g.library_status === "owned").length;
   const total = all.reduce((n, g) => n + (Number(g.playtime_minutes) || 0), 0);
-  const top = all.reduce((a, g) => (!a || g.playtime_minutes > a.playtime_minutes) ? g : a, null);
+  const avg = all.length ? total / all.length : 0;
+  
   $("stTotal").textContent = all.length.toLocaleString();
   $("stOwned").textContent = owned.toLocaleString();
   $("stWish").textContent = (all.length - owned).toLocaleString();
   $("stTime").textContent = formatHours(total);
-  $("stTop").textContent = all.length ? formatHours(total / all.length) : "0 h";
+  $("stTop").textContent = formatHours(avg);
 }
 
 /* Table */
@@ -630,10 +631,18 @@ async function loadGames() {
   if (s) params.set("search", s);
   if (f) params.set("library_status", f);
   const qs = params.toString() ? "?" + params.toString() : "";
+  
   try {
-    const [list, all] = await Promise.all([api("/games" + qs), qs ? api("/games") : null]);
-    state.games = list || [];
-    state.all = qs ? (all || []) : state.games;
+    // Fetch filtered list AND all games for the summary/stats
+    const [filteredRes, allRes] = await Promise.all([
+      api("/games" + qs), 
+      qs ? api("/games") : null
+    ]);
+
+    // Our new backend returns { total: X, data: [...] }
+    state.games = filteredRes && filteredRes.data ? filteredRes.data : [];
+    state.all = allRes && allRes.data ? allRes.data : (qs ? [] : state.games);
+
     renderSummary();
     renderRows();
   } catch (err) {
