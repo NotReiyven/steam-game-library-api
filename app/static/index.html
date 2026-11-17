@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Steam Game Library</title>
+<style>
+  :root {
+    --bg: #171a21;
+    --surface: #1b2838;
+    --surface-2: #213247;
+    --row-hover: #1f2f43;
+    --border: #2a3f55;
+    --text: #c7d5e0;
+    --text-strong: #ffffff;
+    --muted: #8f98a0;
+    --accent: #66c0f4;
+    --accent-strong: #1a9fff;
+    --owned: #a4d007;
+    --wishlist: #e4b04a;
+    --danger: #d9534f;
+    --radius: 3px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: "Motiva Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: #0e1116;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    color: var(--text-strong);
+  }
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .role-picker { display: flex; align-items: center; gap: 8px; }
+  .role-picker label { color: var(--muted); font-size: 13px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 28px 24px 64px; }
+
+  input, select, button { font-family: inherit; font-size: 14px; }
+  input, select {
+    background: #101822;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    height: 36px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input::placeholder { color: #5f7183; }
+  input:focus-visible, select:focus-visible { border-color: var(--accent); }
+  input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  button {
+    height: 36px;
+    padding: 0 16px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: var(--accent-strong);
+    color: #fff;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  button:hover { background: #3aaeff; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.secondary {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  button.secondary:hover { background: #2a4058; color: var(--text-strong); }
+  button.danger { background: transparent; color: #e58a87; border-color: #5a2f2f; }
+  button.danger:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .controls input[type="search"] { flex: 1 1 240px; min-width: 0; }
+
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 760px; }
+  th, td { text-align: left; padding: 12px 16px; vertical-align: middle; }
+  th {
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 13px;
+    background: #16202d;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td { border-bottom: 1px solid #243649; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--row-hover); }
+  td.num { color: var(--muted); font-variant-numeric: tabular-nums; }
+  td.name { color: var(--text-strong); font-weight: 500; }
+  td.notes { color: var(--muted); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td.actions { white-space: nowrap; text-align: right; }
+  td.actions button { height: 30px; padding: 0 12px; font-size: 13px; }
+  td.actions button + button { margin-left: 6px; }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: capitalize;
+  }
+  .status::before {
+    content: "";
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .status-owned { color: var(--owned); }
+  .status-wishlist { color: var(--wishlist); }
+
+  .empty { text-align: center; color: var(--muted); padding: 48px 16px; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left-width: 3px;
+    max-width: 400px;
+    color: var(--text-strong);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    transform: translateY(16px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    z-index: 200;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { border-left-color: var(--danger); }
+  .toast.success { border-left-color: var(--owned); }
+
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(8, 11, 15, 0.8);
+    display: none; align-items: center; justify-content: center;
+    padding: 16px;
+    z-index: 100;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 460px;
+    max-height: 100%;
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  .modal h2 {
+    margin: 0;
+    padding: 18px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-strong);
+    border-bottom: 1px solid var(--border);
+  }
+  .modal .fields { padding: 20px 24px; display: flex; flex-direction: column; gap: 6px; }
+  .modal label { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .modal label:first-child { margin-top: 0; }
+  .modal .actions {
+    display: flex; gap: 8px; justify-content: flex-end;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    background: #16202d;
+  }
+
+  @media (max-width: 600px) {
+    .header-inner { height: auto; padding: 14px 16px; flex-wrap: wrap; }
+    main { padding: 20px 16px 48px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <h1>Steam Game Library</h1>
+    <div class="header-actions">
+      <div class="role-picker">
+        <label for="roleSelect">Role</label>
+        <select id="roleSelect">
+          <option value="normal">Normal</option>
+          <option value="master">Master</option>
+        </select>
+      </div>
+      <button id="addBtn">Add game</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="controls">
+    <input id="searchInput" type="search" placeholder="Search by name" />
+    <select id="statusFilter">
+      <option value="">All statuses</option>
+      <option value="owned">Owned</option>
+      <option value="wishlist">Wishlist</option>
+    </select>
+    <button class="secondary" id="refreshBtn">Refresh</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>App ID</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Playtime</th>
+          <th>Source</th>
+          <th>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="gamesBody">
+        <tr><td colspan="7" class="empty">Loading</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h2 id="modalTitle">Add game</h2>
+    <div class="fields">
+      <input type="hidden" id="formAppId" />
+      <label for="formName">Name</label>
+      <input id="formName" type="text" maxlength="200" placeholder="e.g. Hades II" />
+      <label for="formSteamId">Steam App ID</label>
+      <input id="formSteamId" type="number" min="1" placeholder="e.g. 1145350" />
+      <label for="formStatus">Status</label>
+      <select id="formStatus">
+        <option value="owned">Owned</option>
+        <option value="wishlist">Wishlist</option>
+      </select>
+      <label for="formPlaytime">Playtime (minutes)</label>
+      <input id="formPlaytime" type="number" min="0" value="0" />
+      <label for="formNotes">Notes (optional)</label>
+      <input id="formNotes" type="text" maxlength="1000" placeholder="Anything worth remembering" />
+    </div>
+    <div class="actions">
+      <button class="secondary" id="cancelBtn">Cancel</button>
+      <button id="saveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const TOKENS = {
+  normal: "ON4FLs6gXshPwHFHjMp0ApFLOe8UMyPNJSe9hbAyuBY",
+  master: "ZrzX13ay2neuEltgVbgYNi8YfEYOVJFpJLepRCDAVY8"
+};
+
+const API = "/api/v1";
+const $ = (id) => document.getElementById(id);
+
+function token() { return TOKENS[$("roleSelect").value]; }
+
+function toast(message, kind = "success") {
+  const t = $("toast");
+  t.textContent = message;
+  t.className = "toast show " + kind;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = "toast " + kind; }, 3500);
+}
+
+async function api(path, options = {}) {
+  const res = await fetch(API + path, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token(),
+      ...(options.headers || {})
+    }
+  });
+  if (res.status === 204) return null;
+  const text = await res.text();
+  let body = null;
+  try { body = text ? JSON.parse(text) : null; } catch (_) { body = text; }
+  if (!res.ok) {
+    const msg = (body && body.detail) ? JSON.stringify(body.detail) : `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return body;
+}
+
+function statusLabel(s) {
+  return `<span class="status status-${escapeHtml(s)}">${escapeHtml(s)}</span>`;
+}
+
+function formatPlaytime(min) {
+  const m = Number(min) || 0;
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60);
+  const r = m % 60;
+  return r ? `${h} h ${r} min` : `${h} h`;
+}
+
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+function renderRows(games) {
+  const body = $("gamesBody");
+  if (!games || games.length === 0) {
+    body.innerHTML = `<tr><td colspan="7" class="empty">No games yet. Select Add game to create one.</td></tr>`;
+    return;
+  }
+  body.innerHTML = games.map(g => `
+    <tr>
+      <td class="num">${escapeHtml(g.app_id)}</td>
+      <td class="name">${escapeHtml(g.name)}</td>
+      <td>${statusLabel(g.library_status)}</td>
+      <td>${formatPlaytime(g.playtime_minutes)}</td>
+      <td>${escapeHtml(g.source)}</td>
+      <td class="notes" title="${escapeHtml(g.notes || "")}">${escapeHtml(g.notes || "")}</td>
+      <td class="actions">
+        <button class="secondary" data-edit="${escapeHtml(g.app_id)}">Edit</button>
+        <button class="danger" data-del="${escapeHtml(g.app_id)}">Delete</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+async function loadGames() {
+  const params = new URLSearchParams();
+  const s = $("searchInput").value.trim();
+  const f = $("statusFilter").value;
+  if (s) params.set("search", s);
+  if (f) params.set("library_status", f);
+  const qs = params.toString() ? "?" + params.toString() : "";
+  try {
+    const games = await api("/games" + qs);
+    renderRows(games);
+  } catch (err) {
+    toast(err.message, "error");
+    $("gamesBody").innerHTML = `<tr><td colspan="7" class="empty">Could not load games: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function openModal(game = null) {
+  $("modal").classList.add("show");
+  $("modalTitle").textContent = game ? "Edit game" : "Add game";
+  $("formAppId").value = game ? game.app_id : "";
+  $("formSteamId").value = game ? game.app_id : "";
+  $("formName").value = game ? game.name : "";
+  $("formStatus").value = game ? game.library_status : "owned";
+  $("formPlaytime").value = game ? game.playtime_minutes : 0;
+  $("formNotes").value = game ? (game.notes || "") : "";
+  $("formSteamId").disabled = !!game;
+  $("formName").disabled = !!game;
+}
+
+function closeModal() {
+  $("modal").classList.remove("show");
+}
+
+async function saveGame() {
+  const editing = $("formSteamId").disabled;
+  const appId = Number($("formSteamId").value);
+  const name = $("formName").value.trim();
+  const libraryStatus = $("formStatus").value;
+  const playtime = Number($("formPlaytime").value);
+  const notes = $("formNotes").value.trim() || null;
+
+  if (!editing) {
+    if (!Number.isInteger(appId) || appId <= 0) return toast("Steam App ID must be a positive integer.", "error");
+    if (!name) return toast("Name is required.", "error");
+    try {
+      await api("/games", {
+        method: "POST",
+        body: JSON.stringify({
+          app_id: appId, name, library_status: libraryStatus,
+          playtime_minutes: playtime, source: "manual", notes
+        })
+      });
+      toast("Game added.", "success");
+    } catch (err) { return toast(err.message, "error"); }
+  } else {
+    try {
+      await api(`/games/${appId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ library_status: libraryStatus, playtime_minutes: playtime, notes })
+      });
+      toast("Game updated.", "success");
+    } catch (err) { return toast(err.message, "error"); }
+  }
+
+  closeModal();
+  loadGames();
+}
+
+async function deleteGame(appId) {
+  if ($("roleSelect").value !== "master") {
+    return toast("Switch to the Master role to delete games.", "error");
+  }
+  if (!confirm(`Delete game ${appId}? This cannot be undone.`)) return;
+  try {
+    await api(`/games/${appId}`, { method: "DELETE" });
+    toast("Game deleted.", "success");
+    loadGames();
+  } catch (err) { toast(err.message, "error"); }
+}
+
+async function editGame(appId) {
+  try {
+    const game = await api(`/games/${appId}`);
+    openModal(game);
+  } catch (err) { toast(err.message, "error"); }
+}
+
+$("addBtn").addEventListener("click", () => openModal());
+$("cancelBtn").addEventListener("click", closeModal);
+$("saveBtn").addEventListener("click", saveGame);
+$("refreshBtn").addEventListener("click", loadGames);
+$("roleSelect").addEventListener("change", loadGames);
+$("statusFilter").addEventListener("change", loadGames);
+$("searchInput").addEventListener("input", () => {
+  clearTimeout(window._searchTimer);
+  window._searchTimer = setTimeout(loadGames, 250);
+});
+$("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+document.addEventListener("click", (e) => {
+  const edit = e.target.closest("[data-edit]");
+  if (edit) return editGame(edit.dataset.edit);
+  const del = e.target.closest("[data-del]");
+  if (del) return deleteGame(del.dataset.del);
+});
+
+loadGames();
+</script>
+</body>
+</html>
