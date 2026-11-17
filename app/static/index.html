@@ -229,6 +229,7 @@
           <option value="master">Master</option>
         </select>
       </div>
+      <button class="secondary" id="mockSyncBtn">Import Mock Steam Data</button>
       <button id="addBtn">Add game</button>
     </div>
   </div>
@@ -456,6 +457,44 @@ async function editGame(appId) {
     openModal(game);
   } catch (err) { toast(err.message, "error"); }
 }
+
+$("mockSyncBtn").addEventListener("click", async () => {
+  if ($("roleSelect").value !== "master") {
+    return toast("Switch to Master role to import games.", "error");
+  }
+  
+  toast("Importing mock Steam data...", "success");
+
+  const mockGames = {
+    games: [
+      { appid: 570, name: "Dota 2", playtime_forever: 4500 },
+      { appid: 730, name: "Counter-Strike 2", playtime_forever: 1200 },
+      { appid: 1091500, name: "Cyberpunk 2077", playtime_forever: 3400 },
+      { appid: 1174180, name: "Red Dead Redemption 2", playtime_forever: 8500 },
+      { appid: 292030, name: "The Witcher 3: Wild Hunt", playtime_forever: 15000 }
+    ]
+  };
+
+  try {
+    const res = await fetch("/api/v1/steam/mock-sync", {
+      method: "POST",
+      headers: { 
+        "Authorization": "Bearer " + token(),
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(mockGames)
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) throw new Error(data.detail || "Sync failed");
+    
+    toast(`Success! Imported ${data.records_upserted} games.`, "success");
+    loadGames();
+  } catch (err) {
+    toast(err.message, "error");
+  }
+});
 
 $("addBtn").addEventListener("click", () => openModal());
 $("cancelBtn").addEventListener("click", closeModal);
