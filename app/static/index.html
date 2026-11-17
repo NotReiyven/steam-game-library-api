@@ -7,13 +7,17 @@
 <style>
   :root {
     --bg: #171a21;
+    --bar: #0e1116;
     --surface: #1b2838;
     --surface-2: #213247;
-    --row-hover: #1f2f43;
+    --head: #16202d;
+    --hover: #1f2f43;
     --border: #2a3f55;
+    --line: #243649;
     --text: #c7d5e0;
-    --text-strong: #ffffff;
+    --strong: #ffffff;
     --muted: #8f98a0;
+    --faint: #5f7183;
     --accent: #66c0f4;
     --accent-strong: #1a9fff;
     --owned: #a4d007;
@@ -33,234 +37,224 @@
     color: var(--text);
     min-height: 100vh;
   }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
 
-  header {
-    background: #0e1116;
-    border-bottom: 1px solid var(--border);
+  /* Header */
+  header { background: var(--bar); border-bottom: 1px solid var(--border); }
+  .header-inner { height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark {
+    width: 28px; height: 28px; border-radius: var(--radius);
+    background: var(--accent-strong);
+    display: grid; place-items: center;
   }
-  .header-inner {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 0 24px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+  .brand-mark span { width: 10px; height: 10px; border: 2px solid #fff; border-radius: 50%; }
+  header h1 { margin: 0; font-size: 17px; font-weight: 500; color: var(--strong); }
+  .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .field-inline { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #101822; }
+  .seg button {
+    height: 34px; padding: 0 14px; border: 0; border-radius: 0;
+    background: transparent; color: var(--muted); font-weight: 500;
   }
-  header h1 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 500;
-    letter-spacing: 0.2px;
-    color: var(--text-strong);
-  }
-  .header-actions { display: flex; align-items: center; gap: 12px; }
-  .role-picker { display: flex; align-items: center; gap: 8px; }
-  .role-picker label { color: var(--muted); font-size: 13px; }
+  .seg button:hover { background: var(--surface-2); color: var(--strong); }
+  .seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--strong); box-shadow: inset 0 -2px 0 var(--accent); }
 
-  main { max-width: 1120px; margin: 0 auto; padding: 28px 24px 64px; }
-
+  /* Controls */
   input, select, button { font-family: inherit; font-size: 14px; }
   input, select {
-    background: #101822;
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 8px 12px;
-    height: 36px;
-    outline: none;
+    background: #101822; color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 8px 12px; height: 36px; outline: none;
     transition: border-color 0.15s;
   }
-  input::placeholder { color: #5f7183; }
+  input::placeholder { color: var(--faint); }
   input:focus-visible, select:focus-visible { border-color: var(--accent); }
   input:disabled { opacity: 0.55; cursor: not-allowed; }
-
   button {
-    height: 36px;
-    padding: 0 16px;
-    border: 1px solid transparent;
-    border-radius: var(--radius);
-    background: var(--accent-strong);
-    color: #fff;
-    font-weight: 500;
-    cursor: pointer;
+    height: 36px; padding: 0 16px;
+    border: 1px solid transparent; border-radius: var(--radius);
+    background: var(--accent-strong); color: #fff; font-weight: 500; cursor: pointer;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
   }
   button:hover { background: #3aaeff; }
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  button.secondary {
-    background: var(--surface-2);
-    color: var(--text);
-    border-color: var(--border);
-  }
-  button.secondary:hover { background: #2a4058; color: var(--text-strong); }
+  button.secondary { background: var(--surface-2); color: var(--text); border-color: var(--border); }
+  button.secondary:hover { background: #2a4058; color: var(--strong); }
   button.danger { background: transparent; color: #e58a87; border-color: #5a2f2f; }
   button.danger:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.solid-danger { background: var(--danger); }
+  button.solid-danger:hover { background: #e2615d; }
+  button.locked { opacity: 0.4; cursor: not-allowed; }
 
-  .controls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-  .controls input[type="search"] { flex: 1 1 240px; min-width: 0; }
+  main { padding: 28px 0 64px; }
 
-  .table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow-x: auto;
+  /* Summary strip */
+  .summary {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 20px;
   }
-  table { width: 100%; border-collapse: collapse; min-width: 760px; }
-  th, td { text-align: left; padding: 12px 16px; vertical-align: middle; }
-  th {
-    color: var(--muted);
-    font-weight: 500;
-    font-size: 13px;
-    background: #16202d;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
+  .stat { padding: 16px 20px; border-left: 1px solid var(--line); min-width: 0; }
+  .stat:first-child { border-left: 0; }
+  .stat dt { color: var(--muted); font-size: 13px; margin: 0 0 4px; }
+  .stat dd { margin: 0; color: var(--strong); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stat dd.small { font-size: 16px; line-height: 33px; }
+
+  /* Toolbar */
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .toolbar input[type="search"] { flex: 1 1 260px; min-width: 0; max-width: 420px; }
+  .count { margin-left: auto; color: var(--muted); font-size: 13px; }
+
+  /* Table */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 820px; }
+  th, td { text-align: left; padding: 10px 16px; vertical-align: middle; }
+  th { background: var(--head); border-bottom: 1px solid var(--border); white-space: nowrap; padding-top: 0; padding-bottom: 0; }
+  th, th button.sort { color: var(--muted); font-weight: 500; font-size: 13px; }
+  th button.sort {
+    background: transparent; border: 0; height: 42px; padding: 0; border-radius: 0;
+    display: inline-flex; align-items: center; gap: 8px;
   }
-  td { border-bottom: 1px solid #243649; }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: var(--row-hover); }
-  td.num { color: var(--muted); font-variant-numeric: tabular-nums; }
-  td.name { color: var(--text-strong); font-weight: 500; }
-  td.notes { color: var(--muted); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  th button.sort:hover { color: var(--strong); background: transparent; }
+  th[aria-sort] button.sort { color: var(--strong); }
+  th[aria-sort="ascending"] button.sort::after { content: ""; border: solid transparent; border-width: 0 4px 5px; border-bottom-color: var(--accent); }
+  th[aria-sort="descending"] button.sort::after { content: ""; border: solid transparent; border-width: 5px 4px 0; border-top-color: var(--accent); }
+  td { border-bottom: 1px solid var(--line); }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover td { background: var(--hover); }
+
+  .game { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .thumb {
+    width: 92px; height: 35px; flex: none; border-radius: 2px;
+    background: var(--head); border: 1px solid var(--line); object-fit: cover; display: block;
+  }
+  .game-name { color: var(--strong); font-weight: 500; }
+  .game-id { color: var(--faint); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+  .status { display: inline-flex; align-items: center; gap: 8px; text-transform: capitalize; }
+  .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .status-owned { color: var(--owned); }
+  .status-wishlist { color: var(--wishlist); }
+
+  .play { min-width: 120px; }
+  .play-text { font-variant-numeric: tabular-nums; }
+  .play-bar { height: 3px; background: var(--line); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+  .play-bar i { display: block; height: 100%; background: var(--accent-strong); }
+
+  .tag { display: inline-block; padding: 1px 8px; border: 1px solid var(--border); border-radius: 2px; color: var(--muted); font-size: 12px; }
+  td.notes { color: var(--muted); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   td.actions { white-space: nowrap; text-align: right; }
   td.actions button { height: 30px; padding: 0 12px; font-size: 13px; }
   td.actions button + button { margin-left: 6px; }
 
-  .status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-transform: capitalize;
-  }
-  .status::before {
-    content: "";
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-  .status-owned { color: var(--owned); }
-  .status-wishlist { color: var(--wishlist); }
+  .empty { text-align: center; color: var(--muted); padding: 56px 16px; }
+  .empty strong { display: block; color: var(--strong); font-weight: 500; font-size: 16px; margin-bottom: 4px; }
+  .empty button { margin-top: 16px; }
 
-  .empty { text-align: center; color: var(--muted); padding: 48px 16px; }
-
+  /* Toast */
   .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    padding: 12px 16px;
-    border-radius: var(--radius);
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-left-width: 3px;
-    max-width: 400px;
-    color: var(--text-strong);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
-    transform: translateY(16px);
-    opacity: 0;
-    pointer-events: none;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-    z-index: 200;
+    position: fixed; bottom: 24px; right: 24px; max-width: 400px; padding: 12px 16px;
+    background: var(--surface-2); color: var(--strong);
+    border: 1px solid var(--border); border-left-width: 3px; border-radius: var(--radius);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+    transform: translateY(16px); opacity: 0; pointer-events: none;
+    transition: transform 0.2s ease, opacity 0.2s ease; z-index: 200;
   }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.error { border-left-color: var(--danger); }
   .toast.success { border-left-color: var(--owned); }
 
+  /* Modals */
   .modal-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(8, 11, 15, 0.8);
-    display: none; align-items: center; justify-content: center;
-    padding: 16px;
-    z-index: 100;
+    position: fixed; inset: 0; background: rgba(8,11,15,0.8);
+    display: none; align-items: center; justify-content: center; padding: 16px; z-index: 100;
   }
   .modal-backdrop.show { display: flex; }
   .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    width: 100%;
-    max-width: 460px;
-    max-height: 100%;
-    overflow-y: auto;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    width: 100%; max-width: 460px; max-height: 100%; overflow-y: auto;
     display: flex; flex-direction: column;
   }
-  .modal h2 {
-    margin: 0;
-    padding: 18px 24px;
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text-strong);
-    border-bottom: 1px solid var(--border);
-  }
-  .modal .fields { padding: 20px 24px; display: flex; flex-direction: column; gap: 6px; }
-  .modal label { font-size: 13px; color: var(--muted); margin-top: 8px; }
-  .modal label:first-child { margin-top: 0; }
-  .modal .actions {
-    display: flex; gap: 8px; justify-content: flex-end;
-    padding: 16px 24px;
-    border-top: 1px solid var(--border);
-    background: #16202d;
-  }
+  .modal h2 { margin: 0; padding: 18px 24px; font-size: 16px; font-weight: 500; color: var(--strong); border-bottom: 1px solid var(--border); }
+  .modal .body { padding: 20px 24px; }
+  .modal .body p { margin: 0; color: var(--text); }
+  .modal .fields { padding: 20px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 12px; }
+  .modal .fields .full { grid-column: 1 / -1; }
+  .modal .fields > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .modal label { font-size: 13px; color: var(--muted); }
+  .modal .actions { display: flex; gap: 8px; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid var(--border); background: var(--head); }
 
+  @media (max-width: 860px) {
+    .summary { grid-template-columns: repeat(2, 1fr); }
+    .stat:nth-child(odd) { border-left: 0; }
+    .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .stat:last-child { grid-column: 1 / -1; }
+  }
   @media (max-width: 600px) {
-    .header-inner { height: auto; padding: 14px 16px; flex-wrap: wrap; }
-    main { padding: 20px 16px 48px; }
+    .wrap { padding: 0 16px; }
+    .header-inner { height: auto; padding: 14px 0; flex-wrap: wrap; }
+    .modal .fields { grid-template-columns: 1fr; }
+    .count { margin-left: 0; width: 100%; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; }
-  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
 <header>
-  <div class="header-inner">
-    <h1>Steam Game Library</h1>
+  <div class="wrap header-inner">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><span></span></div>
+      <h1>Steam Game Library</h1>
+    </div>
     <div class="header-actions">
-      <div class="role-picker">
-        <label for="roleSelect">Role</label>
-        <select id="roleSelect">
-          <option value="normal">Normal</option>
-          <option value="master">Master</option>
-        </select>
+      <div class="field-inline">
+        <span id="roleLabel">Role</span>
+        <div class="seg" role="group" aria-labelledby="roleLabel" id="roleSeg">
+          <button type="button" data-role="normal" aria-pressed="true">Normal</button>
+          <button type="button" data-role="master" aria-pressed="false">Master</button>
+        </div>
       </div>
-      <button class="secondary" id="mockSyncBtn">Import Mock Steam Data</button>
+      <button class="secondary" id="mockSyncBtn">Import mock data</button>
       <button id="addBtn">Add game</button>
     </div>
   </div>
 </header>
 
-<main>
-  <div class="controls">
-    <input id="searchInput" type="search" placeholder="Search by name" />
-    <select id="statusFilter">
+<main class="wrap">
+  <dl class="summary" id="summary">
+    <div class="stat"><dt>Games</dt><dd id="stTotal">0</dd></div>
+    <div class="stat"><dt>Owned</dt><dd id="stOwned">0</dd></div>
+    <div class="stat"><dt>Wishlist</dt><dd id="stWish">0</dd></div>
+    <div class="stat"><dt>Total playtime</dt><dd id="stTime">0 h</dd></div>
+    <div class="stat"><dt>Most played</dt><dd class="small" id="stTop">None</dd></div>
+  </dl>
+
+  <div class="toolbar">
+    <input id="searchInput" type="search" placeholder="Search by name" aria-label="Search by name" />
+    <select id="statusFilter" aria-label="Filter by status">
       <option value="">All statuses</option>
       <option value="owned">Owned</option>
       <option value="wishlist">Wishlist</option>
     </select>
     <button class="secondary" id="refreshBtn">Refresh</button>
+    <span class="count" id="count" aria-live="polite"></span>
   </div>
 
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
-          <th>App ID</th>
-          <th>Name</th>
-          <th>Status</th>
-          <th>Playtime</th>
-          <th>Source</th>
+          <th data-sort="name" aria-sort="ascending"><button class="sort" type="button">Game</button></th>
+          <th data-sort="library_status"><button class="sort" type="button">Status</button></th>
+          <th data-sort="playtime_minutes"><button class="sort" type="button">Playtime</button></th>
+          <th data-sort="source"><button class="sort" type="button">Source</button></th>
           <th>Notes</th>
           <th></th>
         </tr>
       </thead>
       <tbody id="gamesBody">
-        <tr><td colspan="7" class="empty">Loading</td></tr>
+        <tr><td colspan="6" class="empty">Loading games</td></tr>
       </tbody>
     </table>
   </div>
@@ -271,23 +265,44 @@
     <h2 id="modalTitle">Add game</h2>
     <div class="fields">
       <input type="hidden" id="formAppId" />
-      <label for="formName">Name</label>
-      <input id="formName" type="text" maxlength="200" placeholder="e.g. Hades II" />
-      <label for="formSteamId">Steam App ID</label>
-      <input id="formSteamId" type="number" min="1" placeholder="e.g. 1145350" />
-      <label for="formStatus">Status</label>
-      <select id="formStatus">
-        <option value="owned">Owned</option>
-        <option value="wishlist">Wishlist</option>
-      </select>
-      <label for="formPlaytime">Playtime (minutes)</label>
-      <input id="formPlaytime" type="number" min="0" value="0" />
-      <label for="formNotes">Notes (optional)</label>
-      <input id="formNotes" type="text" maxlength="1000" placeholder="Anything worth remembering" />
+      <div class="full">
+        <label for="formName">Name</label>
+        <input id="formName" type="text" maxlength="200" placeholder="e.g. Hades II" />
+      </div>
+      <div>
+        <label for="formSteamId">Steam App ID</label>
+        <input id="formSteamId" type="number" min="1" placeholder="e.g. 1145350" />
+      </div>
+      <div>
+        <label for="formStatus">Status</label>
+        <select id="formStatus">
+          <option value="owned">Owned</option>
+          <option value="wishlist">Wishlist</option>
+        </select>
+      </div>
+      <div class="full">
+        <label for="formPlaytime">Playtime (minutes)</label>
+        <input id="formPlaytime" type="number" min="0" value="0" />
+      </div>
+      <div class="full">
+        <label for="formNotes">Notes (optional)</label>
+        <input id="formNotes" type="text" maxlength="1000" placeholder="Anything worth remembering" />
+      </div>
     </div>
     <div class="actions">
       <button class="secondary" id="cancelBtn">Cancel</button>
-      <button id="saveBtn">Save</button>
+      <button id="saveBtn">Save game</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="confirmModal">
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" style="max-width:400px">
+    <h2 id="confirmTitle">Delete game</h2>
+    <div class="body"><p id="confirmText"></p></div>
+    <div class="actions">
+      <button class="secondary" id="confirmNo">Cancel</button>
+      <button class="solid-danger" id="confirmYes">Delete game</button>
     </div>
   </div>
 </div>
@@ -302,8 +317,14 @@ const TOKENS = {
 
 const API = "/api/v1";
 const $ = (id) => document.getElementById(id);
+const state = { role: "normal", games: [], all: [], sortKey: "name", sortDir: "asc" };
 
-function token() { return TOKENS[$("roleSelect").value]; }
+const isMaster = () => state.role === "master";
+const token = () => TOKENS[state.role];
+
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
 
 function toast(message, kind = "success") {
   const t = $("toast");
@@ -327,48 +348,100 @@ async function api(path, options = {}) {
   let body = null;
   try { body = text ? JSON.parse(text) : null; } catch (_) { body = text; }
   if (!res.ok) {
-    const msg = (body && body.detail) ? JSON.stringify(body.detail) : `HTTP ${res.status}`;
+    const msg = (body && body.detail) ? (typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail)) : `HTTP ${res.status}`;
     throw new Error(msg);
   }
   return body;
 }
 
-function statusLabel(s) {
-  return `<span class="status status-${escapeHtml(s)}">${escapeHtml(s)}</span>`;
-}
-
 function formatPlaytime(min) {
   const m = Number(min) || 0;
   if (m < 60) return `${m} min`;
-  const h = Math.floor(m / 60);
-  const r = m % 60;
+  const h = Math.floor(m / 60), r = m % 60;
   return r ? `${h} h ${r} min` : `${h} h`;
 }
 
-function escapeHtml(s) {
-  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+function formatHours(min) {
+  const h = (Number(min) || 0) / 60;
+  return `${h.toLocaleString(undefined, { maximumFractionDigits: 1 })} h`;
 }
 
-function renderRows(games) {
+/* Summary */
+function renderSummary() {
+  const all = state.all;
+  const owned = all.filter(g => g.library_status === "owned").length;
+  const total = all.reduce((n, g) => n + (Number(g.playtime_minutes) || 0), 0);
+  const top = all.reduce((a, g) => (!a || g.playtime_minutes > a.playtime_minutes) ? g : a, null);
+  $("stTotal").textContent = all.length.toLocaleString();
+  $("stOwned").textContent = owned.toLocaleString();
+  $("stWish").textContent = (all.length - owned).toLocaleString();
+  $("stTime").textContent = formatHours(total);
+  $("stTop").textContent = top && top.playtime_minutes > 0 ? top.name : "None";
+  $("stTop").title = $("stTop").textContent;
+}
+
+/* Table */
+function sortedGames() {
+  const k = state.sortKey, dir = state.sortDir === "asc" ? 1 : -1;
+  return [...state.games].sort((a, b) => {
+    const x = a[k], y = b[k];
+    if (typeof x === "number" && typeof y === "number") return (x - y) * dir;
+    return String(x ?? "").localeCompare(String(y ?? ""), undefined, { sensitivity: "base" }) * dir;
+  });
+}
+
+function renderRows() {
   const body = $("gamesBody");
-  if (!games || games.length === 0) {
-    body.innerHTML = `<tr><td colspan="7" class="empty">No games yet. Select Add game to create one.</td></tr>`;
+  const games = sortedGames();
+  const filtered = $("searchInput").value.trim() || $("statusFilter").value;
+
+  document.querySelectorAll("th[data-sort]").forEach(th => {
+    if (th.dataset.sort === state.sortKey) th.setAttribute("aria-sort", state.sortDir === "asc" ? "ascending" : "descending");
+    else th.removeAttribute("aria-sort");
+  });
+
+  $("count").textContent = state.games.length
+    ? `Showing ${state.games.length} of ${state.all.length} ${state.all.length === 1 ? "game" : "games"}`
+    : "";
+
+  if (games.length === 0) {
+    body.innerHTML = filtered
+      ? `<tr><td colspan="6" class="empty"><strong>No matches</strong>Try a different search or clear the status filter.</td></tr>`
+      : `<tr><td colspan="6" class="empty"><strong>Your library is empty</strong>Add a game by hand or import the mock Steam data.<br><button id="emptyAdd">Add game</button></td></tr>`;
     return;
   }
-  body.innerHTML = games.map(g => `
+
+  const maxPlay = Math.max(1, ...games.map(g => Number(g.playtime_minutes) || 0));
+  const lock = isMaster() ? "" : " locked";
+  const lockTitle = isMaster() ? "" : ' title="Requires the Master role"';
+
+  body.innerHTML = games.map(g => {
+    const id = Number(g.app_id);
+    const pct = Math.round(((Number(g.playtime_minutes) || 0) / maxPlay) * 100);
+    return `
     <tr>
-      <td class="num">${escapeHtml(g.app_id)}</td>
-      <td class="name">${escapeHtml(g.name)}</td>
-      <td>${statusLabel(g.library_status)}</td>
-      <td>${formatPlaytime(g.playtime_minutes)}</td>
-      <td>${escapeHtml(g.source)}</td>
+      <td>
+        <div class="game">
+          <img class="thumb" loading="lazy" alt="" src="https://cdn.akamai.steamstatic.com/steam/apps/${id}/capsule_184x69.jpg" />
+          <div>
+            <div class="game-name">${escapeHtml(g.name)}</div>
+            <div class="game-id">App ID ${escapeHtml(g.app_id)}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="status status-${escapeHtml(g.library_status)}">${escapeHtml(g.library_status)}</span></td>
+      <td class="play">
+        <div class="play-text">${formatPlaytime(g.playtime_minutes)}</div>
+        <div class="play-bar"><i style="width:${pct}%"></i></div>
+      </td>
+      <td><span class="tag">${escapeHtml(g.source)}</span></td>
       <td class="notes" title="${escapeHtml(g.notes || "")}">${escapeHtml(g.notes || "")}</td>
       <td class="actions">
-        <button class="secondary" data-edit="${escapeHtml(g.app_id)}">Edit</button>
-        <button class="danger" data-del="${escapeHtml(g.app_id)}">Delete</button>
+        <button class="secondary" data-edit="${id}">Edit</button>
+        <button class="danger${lock}" data-del="${id}" data-name="${escapeHtml(g.name)}"${lockTitle}>Delete</button>
       </td>
-    </tr>
-  `).join("");
+    </tr>`;
+  }).join("");
 }
 
 async function loadGames() {
@@ -379,14 +452,18 @@ async function loadGames() {
   if (f) params.set("library_status", f);
   const qs = params.toString() ? "?" + params.toString() : "";
   try {
-    const games = await api("/games" + qs);
-    renderRows(games);
+    const [list, all] = await Promise.all([api("/games" + qs), qs ? api("/games") : null]);
+    state.games = list || [];
+    state.all = qs ? (all || []) : state.games;
+    renderSummary();
+    renderRows();
   } catch (err) {
     toast(err.message, "error");
-    $("gamesBody").innerHTML = `<tr><td colspan="7" class="empty">Could not load games: ${escapeHtml(err.message)}</td></tr>`;
+    $("gamesBody").innerHTML = `<tr><td colspan="6" class="empty"><strong>Could not load games</strong>${escapeHtml(err.message)}<br><button id="retryBtn" class="secondary">Try again</button></td></tr>`;
   }
 }
 
+/* Modals */
 function openModal(game = null) {
   $("modal").classList.add("show");
   $("modalTitle").textContent = game ? "Edit game" : "Add game";
@@ -398,10 +475,27 @@ function openModal(game = null) {
   $("formNotes").value = game ? (game.notes || "") : "";
   $("formSteamId").disabled = !!game;
   $("formName").disabled = !!game;
+  (game ? $("formStatus") : $("formName")).focus();
 }
 
-function closeModal() {
-  $("modal").classList.remove("show");
+function closeModal() { $("modal").classList.remove("show"); }
+
+function confirmDialog(text, label = "Delete game") {
+  return new Promise(resolve => {
+    $("confirmText").textContent = text;
+    $("confirmYes").textContent = label;
+    $("confirmModal").classList.add("show");
+    $("confirmNo").focus();
+    const done = (v) => {
+      $("confirmModal").classList.remove("show");
+      $("confirmYes").onclick = $("confirmNo").onclick = null;
+      $("confirmModal")._cancel = null;
+      resolve(v);
+    };
+    $("confirmYes").onclick = () => done(true);
+    $("confirmNo").onclick = () => done(false);
+    $("confirmModal")._cancel = () => done(false);
+  });
 }
 
 async function saveGame() {
@@ -434,16 +528,14 @@ async function saveGame() {
       toast("Game updated.", "success");
     } catch (err) { return toast(err.message, "error"); }
   }
-
   closeModal();
   loadGames();
 }
 
-async function deleteGame(appId) {
-  if ($("roleSelect").value !== "master") {
-    return toast("Switch to the Master role to delete games.", "error");
-  }
-  if (!confirm(`Delete game ${appId}? This cannot be undone.`)) return;
+async function deleteGame(appId, name) {
+  if (!isMaster()) return toast("Switch to the Master role to delete games.", "error");
+  const ok = await confirmDialog(`Delete ${name || "game " + appId}? This cannot be undone.`);
+  if (!ok) return;
   try {
     await api(`/games/${appId}`, { method: "DELETE" });
     toast("Game deleted.", "success");
@@ -452,19 +544,15 @@ async function deleteGame(appId) {
 }
 
 async function editGame(appId) {
-  try {
-    const game = await api(`/games/${appId}`);
-    openModal(game);
-  } catch (err) { toast(err.message, "error"); }
+  try { openModal(await api(`/games/${appId}`)); }
+  catch (err) { toast(err.message, "error"); }
 }
 
-$("mockSyncBtn").addEventListener("click", async () => {
-  if ($("roleSelect").value !== "master") {
-    return toast("Switch to Master role to import games.", "error");
-  }
-  
-  toast("Importing mock Steam data...", "success");
-
+async function mockSync() {
+  if (!isMaster()) return toast("Switch to the Master role to import games.", "error");
+  const btn = $("mockSyncBtn");
+  btn.disabled = true;
+  btn.textContent = "Importing";
   const mockGames = {
     games: [
       { appid: 570, name: "Dota 2", playtime_forever: 4500 },
@@ -474,46 +562,68 @@ $("mockSyncBtn").addEventListener("click", async () => {
       { appid: 292030, name: "The Witcher 3: Wild Hunt", playtime_forever: 15000 }
     ]
   };
-
   try {
-    const res = await fetch("/api/v1/steam/mock-sync", {
-      method: "POST",
-      headers: { 
-        "Authorization": "Bearer " + token(),
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(mockGames)
-    });
-    
-    const data = await res.json();
-    
-    if (!res.ok) throw new Error(data.detail || "Sync failed");
-    
-    toast(`Success! Imported ${data.records_upserted} games.`, "success");
+    const data = await api("/steam/mock-sync", { method: "POST", body: JSON.stringify(mockGames) });
+    toast(`Imported ${data.records_upserted} games.`, "success");
     loadGames();
   } catch (err) {
-    toast(err.message, "error");
+    toast(err.message || "Import failed.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Import mock data";
   }
-});
+}
 
+/* Events */
+$("roleSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-role]");
+  if (!b || b.dataset.role === state.role) return;
+  state.role = b.dataset.role;
+  document.querySelectorAll("#roleSeg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  loadGames();
+});
 $("addBtn").addEventListener("click", () => openModal());
 $("cancelBtn").addEventListener("click", closeModal);
 $("saveBtn").addEventListener("click", saveGame);
 $("refreshBtn").addEventListener("click", loadGames);
-$("roleSelect").addEventListener("change", loadGames);
+$("mockSyncBtn").addEventListener("click", mockSync);
 $("statusFilter").addEventListener("change", loadGames);
 $("searchInput").addEventListener("input", () => {
   clearTimeout(window._searchTimer);
   window._searchTimer = setTimeout(loadGames, 250);
 });
 $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal(); });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+$("modal").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.tagName === "INPUT") saveGame();
+});
+$("confirmModal").addEventListener("click", (e) => {
+  if (e.target === $("confirmModal") && $("confirmModal")._cancel) $("confirmModal")._cancel();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if ($("confirmModal")._cancel) $("confirmModal")._cancel();
+  else closeModal();
+});
+document.querySelector("thead").addEventListener("click", (e) => {
+  const th = e.target.closest("th[data-sort]");
+  if (!th) return;
+  const key = th.dataset.sort;
+  if (state.sortKey === key) state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+  else { state.sortKey = key; state.sortDir = key === "playtime_minutes" ? "desc" : "asc"; }
+  renderRows();
+});
 document.addEventListener("click", (e) => {
   const edit = e.target.closest("[data-edit]");
   if (edit) return editGame(edit.dataset.edit);
   const del = e.target.closest("[data-del]");
-  if (del) return deleteGame(del.dataset.del);
+  if (del) return deleteGame(del.dataset.del, del.dataset.name);
+  if (e.target.id === "emptyAdd") return openModal();
+  if (e.target.id === "retryBtn") return loadGames();
 });
+/* Hide thumbnails that fail to load (error events do not bubble, so capture) */
+document.addEventListener("error", (e) => {
+  if (e.target.classList && e.target.classList.contains("thumb")) e.target.removeAttribute("src");
+}, true);
 
 loadGames();
 </script>
