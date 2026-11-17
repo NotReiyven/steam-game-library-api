@@ -185,6 +185,88 @@
   .modal label { font-size: 13px; color: var(--muted); }
   .modal .actions { display: flex; gap: 8px; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid var(--border); background: var(--head); }
 
+  [hidden] { display: none !important; }
+
+  /* Hero */
+  .hero {
+    position: relative; display: flex; flex-direction: column; justify-content: flex-end;
+    min-height: 400px; margin-bottom: 24px; overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  }
+  .hero-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: 75% 20%;
+    opacity: 0; transition: opacity 0.7s ease;
+  }
+  .hero-img.loaded { opacity: 1; }
+  .hero::before {
+    content: ""; position: absolute; inset: 0; z-index: 1;
+    background:
+      linear-gradient(90deg, rgba(23,26,33,0.97) 0%, rgba(23,26,33,0.7) 36%, rgba(23,26,33,0) 74%),
+      linear-gradient(0deg, rgba(23,26,33,1) 0%, rgba(23,26,33,0) 40%);
+  }
+  .hero.plain { min-height: 0; }
+  .hero.plain::before, .hero.plain .hero-img { display: none; }
+  .hero-body { position: relative; z-index: 2; max-width: 660px; padding: 0 32px 28px; }
+  .hero-kicker { color: var(--accent); font-size: 13px; font-weight: 500; margin-bottom: 10px; }
+  .hero-title {
+    margin: 0 0 12px; font-size: clamp(30px, 4.6vw, 52px); line-height: 1.04;
+    font-weight: 600; letter-spacing: -0.02em; color: var(--strong); text-wrap: balance;
+  }
+  .hero-meta { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 20px; font-size: 15px; }
+  .hero .summary {
+    position: relative; z-index: 2; margin: 0;
+    border: 0; border-top: 1px solid rgba(42,63,85,0.8); border-radius: 0;
+    background: rgba(14,17,22,0.84);
+  }
+  .hero .stat { border-left-color: rgba(42,63,85,0.8); }
+
+  /* Cover grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(172px, 1fr)); gap: 24px 18px; }
+  .grid .empty { grid-column: 1 / -1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .card { position: relative; min-width: 0; }
+  .cover {
+    position: relative; display: block; width: 100%; height: auto; aspect-ratio: 2 / 3; padding: 0;
+    background: var(--head); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .cover:hover { background: var(--head); border-color: var(--accent); transform: translateY(-4px); }
+  .cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: filter 0.18s ease; }
+  .cover-fallback {
+    display: none; position: absolute; inset: 0; padding: 16px; align-items: center; justify-content: center;
+    text-align: center; color: var(--strong); font-weight: 500; background: var(--surface-2);
+  }
+  .card.noimg .cover-fallback { display: flex; }
+  .card.wish .cover-img { filter: saturate(0.4) brightness(0.78); }
+  .card.wish .cover:hover .cover-img { filter: none; }
+  .cover-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(0,0,0,0.55); }
+  .cover-bar i { display: block; height: 100%; background: var(--accent-strong); }
+  .chip {
+    position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 2px;
+    background: rgba(14,17,22,0.9); color: var(--wishlist); font-size: 12px; font-weight: 500;
+  }
+  button.card-del {
+    position: absolute; top: 8px; right: 8px; height: 28px; padding: 0 10px; font-size: 12px;
+    background: rgba(14,17,22,0.92); opacity: 0;
+  }
+  .card:hover button.card-del, .card:focus-within button.card-del { opacity: 1; }
+  .card:hover button.card-del.locked, .card:focus-within button.card-del.locked { opacity: 0.45; }
+  .card-cap { padding: 10px 2px 0; }
+  .card-name { color: var(--strong); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-sub { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .grid.intro .card { animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i) * 35ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+  @media (max-width: 600px) {
+    .hero { min-height: 320px; }
+    .hero-body { padding: 0 20px 20px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: 20px 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .grid.intro .card { animation: none; }
+    .cover:hover { transform: none; }
+  }
+
   @media (max-width: 860px) {
     .summary { grid-template-columns: repeat(2, 1fr); }
     .stat:nth-child(odd) { border-left: 0; }
@@ -222,13 +304,22 @@
 </header>
 
 <main class="wrap">
-  <dl class="summary" id="summary">
-    <div class="stat"><dt>Games</dt><dd id="stTotal">0</dd></div>
-    <div class="stat"><dt>Owned</dt><dd id="stOwned">0</dd></div>
-    <div class="stat"><dt>Wishlist</dt><dd id="stWish">0</dd></div>
-    <div class="stat"><dt>Total playtime</dt><dd id="stTime">0 h</dd></div>
-    <div class="stat"><dt>Most played</dt><dd class="small" id="stTop">None</dd></div>
-  </dl>
+  <section class="hero plain" id="hero">
+    <img class="hero-img" id="heroImg" alt="" />
+    <div class="hero-body" id="heroBody" hidden>
+      <div class="hero-kicker">Most played</div>
+      <h2 class="hero-title" id="heroTitle"></h2>
+      <div class="hero-meta" id="heroMeta"></div>
+      <button class="secondary" id="heroEdit">Edit game</button>
+    </div>
+    <dl class="summary" id="summary">
+      <div class="stat"><dt>Games</dt><dd id="stTotal">0</dd></div>
+      <div class="stat"><dt>Owned</dt><dd id="stOwned">0</dd></div>
+      <div class="stat"><dt>Wishlist</dt><dd id="stWish">0</dd></div>
+      <div class="stat"><dt>Total playtime</dt><dd id="stTime">0 h</dd></div>
+      <div class="stat"><dt>Average per game</dt><dd id="stTop">0 h</dd></div>
+    </dl>
+  </section>
 
   <div class="toolbar">
     <input id="searchInput" type="search" placeholder="Search by name" aria-label="Search by name" />
@@ -237,7 +328,19 @@
       <option value="owned">Owned</option>
       <option value="wishlist">Wishlist</option>
     </select>
+    <select id="sortSelect" aria-label="Sort games">
+      <option value="" hidden>Sorted by column</option>
+      <option value="playtime_minutes:desc">Most played</option>
+      <option value="playtime_minutes:asc">Least played</option>
+      <option value="name:asc">Name A to Z</option>
+      <option value="name:desc">Name Z to A</option>
+      <option value="library_status:asc">Status</option>
+    </select>
     <button class="secondary" id="refreshBtn">Refresh</button>
+    <div class="seg" id="viewSeg" role="group" aria-label="View">
+      <button type="button" data-view="grid" aria-pressed="true">Covers</button>
+      <button type="button" data-view="list" aria-pressed="false">List</button>
+    </div>
     <span class="count" id="count" aria-live="polite"></span>
   </div>
 
@@ -258,6 +361,7 @@
       </tbody>
     </table>
   </div>
+  <div class="grid" id="grid"></div>
 </main>
 
 <div class="modal-backdrop" id="modal">
@@ -317,7 +421,7 @@ const TOKENS = {
 
 const API = "/api/v1";
 const $ = (id) => document.getElementById(id);
-const state = { role: "normal", games: [], all: [], sortKey: "name", sortDir: "asc" };
+const state = { role: "normal", games: [], all: [], sortKey: "playtime_minutes", sortDir: "desc", view: "grid", intro: true, heroId: null };
 
 const isMaster = () => state.role === "master";
 const token = () => TOKENS[state.role];
@@ -376,8 +480,7 @@ function renderSummary() {
   $("stOwned").textContent = owned.toLocaleString();
   $("stWish").textContent = (all.length - owned).toLocaleString();
   $("stTime").textContent = formatHours(total);
-  $("stTop").textContent = top && top.playtime_minutes > 0 ? top.name : "None";
-  $("stTop").title = $("stTop").textContent;
+  $("stTop").textContent = all.length ? formatHours(total / all.length) : "0 h";
 }
 
 /* Table */
@@ -390,7 +493,7 @@ function sortedGames() {
   });
 }
 
-function renderRows() {
+function renderList() {
   const body = $("gamesBody");
   const games = sortedGames();
   const filtered = $("searchInput").value.trim() || $("statusFilter").value;
@@ -442,6 +545,82 @@ function renderRows() {
       </td>
     </tr>`;
   }).join("");
+}
+
+function countLabel() {
+  return state.games.length
+    ? `Showing ${state.games.length} of ${state.all.length} ${state.all.length === 1 ? "game" : "games"}`
+    : "";
+}
+
+function emptyMarkup() {
+  const filtered = $("searchInput").value.trim() || $("statusFilter").value;
+  return filtered
+    ? `<div class="empty"><strong>No matches</strong>Try a different search or clear the status filter.</div>`
+    : `<div class="empty"><strong>Your library is empty</strong>Add a game by hand or import the mock Steam data.<br><button id="emptyAdd">Add game</button></div>`;
+}
+
+function renderHero() {
+  const top = state.all.reduce((a, g) => (!a || g.playtime_minutes > a.playtime_minutes) ? g : a, null);
+  const has = !!top && top.playtime_minutes > 0;
+  const img = $("heroImg");
+  $("hero").classList.toggle("plain", !has);
+  $("heroBody").hidden = !has;
+  if (!has) { img.removeAttribute("src"); img.classList.remove("loaded"); state.heroId = null; return; }
+  $("heroTitle").textContent = top.name;
+  $("heroMeta").innerHTML = `<span>${formatHours(top.playtime_minutes)} played</span><span class="status status-${escapeHtml(top.library_status)}">${escapeHtml(top.library_status)}</span>`;
+  $("heroEdit").dataset.edit = Number(top.app_id);
+  if (state.heroId !== top.app_id) {
+    state.heroId = top.app_id;
+    img.classList.remove("loaded");
+    img.src = `https://cdn.akamai.steamstatic.com/steam/apps/${Number(top.app_id)}/library_hero.jpg`;
+  }
+}
+
+function renderGrid() {
+  const el = $("grid");
+  const games = sortedGames();
+  $("count").textContent = countLabel();
+  if (games.length === 0) { el.className = "grid"; el.innerHTML = emptyMarkup(); return; }
+  const maxPlay = Math.max(1, ...games.map(g => Number(g.playtime_minutes) || 0));
+  const lock = isMaster() ? "" : " locked";
+  const lockTitle = isMaster() ? "" : ' title="Requires the Master role"';
+  el.className = "grid" + (state.intro ? " intro" : "");
+  el.innerHTML = games.map((g, i) => {
+    const id = Number(g.app_id);
+    const wish = g.library_status === "wishlist";
+    const pct = Math.round(((Number(g.playtime_minutes) || 0) / maxPlay) * 100);
+    return `
+    <article class="card${wish ? " wish" : ""}" style="--i:${Math.min(i, 24)}">
+      <button class="cover" data-edit="${id}" aria-label="Edit ${escapeHtml(g.name)}">
+        <img class="cover-img" loading="lazy" alt="" src="https://cdn.akamai.steamstatic.com/steam/apps/${id}/library_600x900.jpg" />
+        <span class="cover-fallback">${escapeHtml(g.name)}</span>
+        ${wish ? '<span class="chip">Wishlist</span>' : ""}
+        <span class="cover-bar"><i style="width:${pct}%"></i></span>
+      </button>
+      <button class="danger card-del${lock}" data-del="${id}" data-name="${escapeHtml(g.name)}"${lockTitle}>Delete</button>
+      <div class="card-cap">
+        <div class="card-name" title="${escapeHtml(g.name)}">${escapeHtml(g.name)}</div>
+        <div class="card-sub">${formatPlaytime(g.playtime_minutes)}</div>
+      </div>
+    </article>`;
+  }).join("");
+  if (state.intro) { state.intro = false; setTimeout(() => el.classList.remove("intro"), 1400); }
+}
+
+function renderRows() {
+  const grid = state.view === "grid";
+  $("grid").hidden = !grid;
+  document.querySelector(".table-wrap").hidden = grid;
+  document.querySelectorAll("#viewSeg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === state.view)));
+  renderHero();
+  if (grid) renderGrid(); else renderList();
+}
+
+function syncSort() {
+  const v = state.sortKey + ":" + state.sortDir;
+  const sel = $("sortSelect");
+  sel.value = [...sel.options].some(o => o.value === v) ? v : "";
 }
 
 async function loadGames() {
@@ -610,6 +789,7 @@ document.querySelector("thead").addEventListener("click", (e) => {
   const key = th.dataset.sort;
   if (state.sortKey === key) state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
   else { state.sortKey = key; state.sortDir = key === "playtime_minutes" ? "desc" : "asc"; }
+  syncSort();
   renderRows();
 });
 document.addEventListener("click", (e) => {
@@ -622,9 +802,27 @@ document.addEventListener("click", (e) => {
 });
 /* Hide thumbnails that fail to load (error events do not bubble, so capture) */
 document.addEventListener("error", (e) => {
-  if (e.target.classList && e.target.classList.contains("thumb")) e.target.removeAttribute("src");
+  const t = e.target;
+  if (!t.classList) return;
+  if (t.classList.contains("thumb") || t.id === "heroImg") t.removeAttribute("src");
+  if (t.classList.contains("cover-img")) { t.closest(".card").classList.add("noimg"); t.remove(); }
 }, true);
+document.addEventListener("load", (e) => {
+  if (e.target.id === "heroImg") e.target.classList.add("loaded");
+}, true);
+$("sortSelect").addEventListener("change", (e) => {
+  if (!e.target.value) return;
+  [state.sortKey, state.sortDir] = e.target.value.split(":");
+  renderRows();
+});
+$("viewSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-view]");
+  if (!b || b.dataset.view === state.view) return;
+  state.view = b.dataset.view;
+  renderRows();
+});
 
+syncSort();
 loadGames();
 </script>
 </body>
