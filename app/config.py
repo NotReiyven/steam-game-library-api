@@ -1,4 +1,3 @@
-
 from functools import lru_cache
 
 from pydantic import SecretStr
@@ -8,6 +7,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     supabase_url: str
     supabase_secret_key: SecretStr
+    api_bearer_token: SecretStr | None = None
+    steam_api_key: SecretStr | None = None
+    steam_id: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
