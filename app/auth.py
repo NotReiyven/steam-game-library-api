@@ -1,50 +1,72 @@
-import secrets
-from enum import Enum
-from fastapi import Depends, HTTPException, status
+import logging
+from dataclasses import dataclass
+from uuid import UUID
+
+import httpx
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 from app.config import get_settings
-from app.db.client import get_supabase_client
+from app.services import profile_service
 
-class Role(str, Enum):
-    NORMAL = "normal"
-    MASTER = "master"
-
-class UserAuth:
-    def __init__(self, role: Role, user_id: str):
-        self.role = role
-        self.user_id = user_id
+logger = logging.getLogger(__name__)
 
 bearer_scheme = HTTPBearer(auto_error=False)
+_http = httpx.Client(timeout=10.0)
 
-def _match(token: str) -> UserAuth | None:
+
+@dataclass(frozen=True)
+class AuthContext:
+    user_id: str
+    email: str | None
+    profile: dict
+
+
+def _unauthorized(detail: str) -> HTTPException:
+    return HTTPException(401, detail, headers={"WWW-Authenticate": "Bearer"})
+
+
+def _verify_token(token: str) -> dict:
+    """Stateless verification against Supabase Auth (signature, expiry, revocation)."""
     settings = get_settings()
-    client = get_supabase_client()
-    
-    # Get the users we just created
-    users = client.table("steam_users").select("id").order("created_at").execute().data
-    if len(users) < 2:
-        return None
+    try:
+        response = _http.get(
+            f"{settings.supabase_url.rstrip('/')}/auth/v1/user",
+            headers={
+                "apikey": settings.supabase_publishable_key,
+                "Authorization": f"Bearer {token}",
+            },
+        )
+    except httpx.HTTPError:
+        logger.error("Supabase Auth request failed")
+        raise HTTPException(503, "Authentication service unavailable.")
 
-    # Map Normal token to User 1, Master token to User 2
-    if secrets.compare_digest(token, settings.api_master_token.get_secret_value()):
-        return UserAuth(Role.MASTER, users[1]["id"])
-    if secrets.compare_digest(token, settings.api_normal_token.get_secret_value()):
-        return UserAuth(Role.NORMAL, users[0]["id"])
-    return None
+    if response.status_code in (401, 403):
+        raise _unauthorized("Invalid or expired token.")
+    if response.status_code != 200:
+        logger.error("Supabase Auth returned status %s", response.status_code)
+        raise HTTPException(503, "Authentication service unavailable.")
+
+    try:
+        data = response.json()
+        UUID(str(data["id"]))
+    except Exception:
+        raise _unauthorized("Invalid token.")
+    return data
+
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-) -> UserAuth:
-    if credentials is None:
-        raise HTTPException(401, "Missing bearer token.", headers={"WWW-Authenticate": "Bearer"})
-    match = _match(credentials.credentials)
-    if match is None:
-        raise HTTPException(401, "Invalid bearer token.", headers={"WWW-Authenticate": "Bearer"})
-    return match
+) -> AuthContext:
+    if credentials is None or not credentials.credentials:
+        raise _unauthorized("Missing bearer token.")
 
-def require_role(*allowed: Role):
-    def checker(user: UserAuth = Depends(get_current_user)) -> UserAuth:
-        if user.role not in allowed:
-            raise HTTPException(403, "Insufficient permissions.")
-        return user
-    return checker
+    auth_user = _verify_token(credentials.credentials)
+    user_id = str(auth_user["id"])
+
+    profile = profile_service.get_profile(user_id)
+    if profile is None:
+        logger.error("Auth user %s has no profile row (trigger/migration problem)", user_id)
+        raise HTTPException(403, "Your account has no profile. Contact the administrator.")
+
+    return AuthContext(user_id=user_id, email=auth_user.get("email"), profile=profile)

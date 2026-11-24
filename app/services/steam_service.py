@@ -1,55 +1,99 @@
+import logging
+
 import httpx
+
 from app.config import get_settings
 from app.db.client import get_supabase_client
-from datetime import datetime, timezone
+from app.services.errors import ServiceUnavailableError, UpstreamError
+
+logger = logging.getLogger(__name__)
 
 STEAM_OWNED_GAMES_URL = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
+MAX_STEAM_GAMES = 20_000
+MAX_INT = 2_147_483_647
 
-async def fetch_owned_games() -> list[dict]:
+EMPTY_WARNING = (
+    "Steam returned no games. Nothing was changed. Check that your Steam "
+    "'Game details' privacy setting is Public, then try again."
+)
+
+
+def fetch_owned_games(steam_id: str) -> tuple[int, list[dict]]:
+    """Return (raw_count, normalized_games). Never exposes the API key in errors."""
     settings = get_settings()
-    if not settings.steam_api_key or not settings.steam_id:
-        raise ValueError("Steam API key or Steam ID is not configured.")
+    api_key = settings.steam_api_key.get_secret_value() if settings.steam_api_key else ""
+    if not api_key:
+        raise ServiceUnavailableError("Steam integration is not configured on the server.")
+
     params = {
-        "key": settings.steam_api_key.get_secret_value(),
-        "steamid": settings.steam_id,
-        "include_appinfo": True,
-        "include_played_free_games": True,
+        "key": api_key,
+        "steamid": steam_id,
+        "include_appinfo": "true",
+        "include_played_free_games": "true",
     }
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.get(STEAM_OWNED_GAMES_URL, params=params)
-        response.raise_for_status()
-    return response.json().get("response", {}).get("games", [])
+    try:
+        with httpx.Client(timeout=settings.steam_api_timeout_seconds) as client:
+            response = client.get(STEAM_OWNED_GAMES_URL, params=params)
+    except httpx.HTTPError as exc:
+        logger.error("Steam request failed: %s", type(exc).__name__)
+        raise UpstreamError("Unable to reach Steam.")
 
-def sync_owned_games(games: list[dict], user_id: str) -> int:
-    if not games:
-        return 0
+    if response.status_code != 200:
+        logger.error("Steam returned HTTP %s", response.status_code)
+        raise UpstreamError("Steam rejected the request or is unavailable.")
 
-    client = get_supabase_client()
-    valid_games = [{"app_id": g["appid"], "name": g["name"]} for g in games if g.get("appid") and g.get("name")]
-    
-    if not valid_games:
-        return 0
+    try:
+        payload = response.json()
+        inner = payload["response"]
+        if not isinstance(inner, dict):
+            raise ValueError
+        raw_games = inner.get("games", [])
+        if not isinstance(raw_games, list):
+            raise ValueError
+    except Exception:
+        logger.error("Steam returned an unexpected payload")
+        raise UpstreamError("Steam returned an invalid response.")
 
-    client.table("games").upsert(valid_games, on_conflict="app_id").execute()
+    if len(raw_games) > MAX_STEAM_GAMES:
+        raise UpstreamError("Steam returned an unreasonably large library.")
 
-    app_ids = [g["app_id"] for g in valid_games]
-    catalog_rows = client.table("games").select("id, app_id").in_("app_id", app_ids).execute().data
-    game_id_map = {row["app_id"]: row["id"] for row in catalog_rows}
+    normalized: dict[int, dict] = {}
+    skipped = 0
+    for item in raw_games:
+        try:
+            appid = int(item["appid"])
+            name = str(item.get("name") or "").strip()[:200]
+            playtime = int(item.get("playtime_forever") or 0)
+        except (KeyError, TypeError, ValueError, AttributeError):
+            skipped += 1
+            continue
+        if appid <= 0 or not name or playtime < 0 or playtime > MAX_INT:
+            skipped += 1
+            continue
+        normalized[appid] = {"appid": appid, "name": name, "playtime_forever": playtime}
 
-    library_records = []
-    for g in games:
-        if not g.get("appid") or not g.get("name"): continue
-        game_uuid = game_id_map.get(g["appid"])
-        if game_uuid:
-            library_records.append({
-                "user_id": user_id,
-                "game_id": game_uuid,
-                "library_status": "owned",
-                "playtime_minutes": g.get("playtime_forever", 0),
-                "source": "steam"
-            })
+    if skipped:
+        logger.warning("Skipped %s invalid Steam records", skipped)
+    return len(raw_games), list(normalized.values())
 
-    if library_records:
-        client.table("user_library").upsert(library_records, on_conflict="user_id,game_id").execute()
 
-    return len(library_records)
+def apply_sync(user_id: str, games: list[dict]) -> int:
+    res = get_supabase_client().rpc(
+        "apply_steam_library_sync",
+        {"p_user_id": user_id, "p_games": games},
+    ).execute()
+    return int(res.data or 0)
+
+
+def latest_sync_time(user_id: str) -> str | None:
+    res = (
+        get_supabase_client()
+        .table("user_games")
+        .select("steam_last_synced_at")
+        .eq("user_id", user_id)
+        .not_.is_("steam_last_synced_at", "null")
+        .order("steam_last_synced_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    return res.data[0]["steam_last_synced_at"] if res.data else None

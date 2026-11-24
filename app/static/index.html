@@ -2,837 +2,1509 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Steam Game Library</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#171a21" />
+<title>Backlog Compass</title>
 <style>
   :root {
-    --bg: #171a21;
-    --bar: #0e1116;
-    --surface: #1b2838;
-    --surface-2: #213247;
-    --head: #16202d;
-    --hover: #1f2f43;
-    --border: #2a3f55;
-    --line: #243649;
-    --text: #c7d5e0;
-    --strong: #ffffff;
-    --muted: #8f98a0;
-    --faint: #5f7183;
-    --accent: #66c0f4;
-    --accent-strong: #1a9fff;
-    --owned: #a4d007;
-    --wishlist: #e4b04a;
-    --danger: #d9534f;
-    --radius: 3px;
     color-scheme: dark;
+    --bg: #1b2838;
+    --bg-deep: #171a21;
+    --bg-deeper: #10151c;
+    --panel: #1b2838;
+    --panel-raised: #202d3d;
+    --panel-hover: #26394d;
+    --line: #2a475e;
+    --line-soft: rgba(102, 192, 244, .13);
+    --text: #c7d5e0;
+    --text-strong: #f1f5f8;
+    --muted: #8f98a0;
+    --faint: #687783;
+    --blue: #66c0f4;
+    --blue-strong: #1a9fff;
+    --blue-wash: rgba(102, 192, 244, .12);
+    --green: #a4d007;
+    --green-dark: #5b7f00;
+    --ok: #8bc53f;
+    --danger: #d75b5b;
+    --radius: 4px;
+    --shadow: 0 12px 36px rgba(0, 0, 0, .34);
   }
+
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
   body {
     margin: 0;
-    font-family: "Motiva Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
-    font-size: 14px;
-    line-height: 1.45;
-    background: var(--bg);
-    color: var(--text);
     min-height: 100vh;
+    color: var(--text);
+    background: var(--bg);
+    font: 14px/1.5 Arial, Helvetica, sans-serif;
   }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  body.lock { overflow: hidden; }
+  [hidden] { display: none !important; }
+  ::selection { color: #fff; background: #27658b; }
+  * { scrollbar-width: thin; scrollbar-color: #40586b #141b24; }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-track { background: #141b24; }
+  *::-webkit-scrollbar-thumb { background: #40586b; border: 2px solid #141b24; border-radius: 2px; }
+  *::-webkit-scrollbar-thumb:hover { background: #58768d; }
 
-  /* Header */
-  header { background: var(--bar); border-bottom: 1px solid var(--border); }
-  .header-inner { height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .brand-mark {
-    width: 28px; height: 28px; border-radius: var(--radius);
-    background: var(--accent-strong);
-    display: grid; place-items: center;
+  .wrap { width: 100%; max-width: none; margin: 0; padding: 0; }
+  .spacer { flex: 1; min-width: 8px; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .hint { color: var(--faint); font-weight: 400; font-size: 12px; }
+  .center { text-align: center; margin-top: 22px; }
+  h1, h2, h3, p { margin: 0; }
+  .h1 { color: var(--text-strong); font-size: clamp(26px, 3vw, 34px); line-height: 1.16; font-weight: 700; letter-spacing: -.035em; margin: 0 0 5px; }
+  .sub { color: var(--muted); margin: 0; font-size: 14px; }
+  .sect { margin-top: 22px; }
+  .eyebrow { color: var(--blue); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 8px; }
+  .view-intro { margin: 4px 0 24px; }
+
+  /* Steam-like desktop application frame */
+  #appView { min-height: 100vh; background: var(--bg); }
+  header {
+    position: sticky; top: 0; z-index: 70;
+    height: 62px;
+    background: #171a21;
+    border-bottom: 1px solid #0d1218;
+    box-shadow: 0 1px 0 rgba(102, 192, 244, .05);
   }
-  .brand-mark span { width: 10px; height: 10px; border: 2px solid #fff; border-radius: 50%; }
-  header h1 { margin: 0; font-size: 17px; font-weight: 500; color: var(--strong); }
-  .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .field-inline { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
-  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #101822; }
-  .seg button {
-    height: 34px; padding: 0 14px; border: 0; border-radius: 0;
-    background: transparent; color: var(--muted); font-weight: 500;
+  .hbar { height: 62px; display: flex; align-items: center; gap: 22px; padding: 0 25px; }
+  .brand { display: flex; align-items: center; gap: 11px; flex: none; color: var(--text-strong); font-size: 15px; font-weight: 700; letter-spacing: .015em; white-space: nowrap; }
+  .brand-copy { display: flex; flex-direction: column; line-height: 1.05; gap: 4px; }
+  .brand-copy small { color: #73818c; font-size: 9px; font-weight: 700; letter-spacing: .17em; }
+  .logo {
+    width: 31px; height: 31px; display: inline-block; position: relative; flex: none;
+    border: 2px solid var(--blue); border-radius: 50%;
+    background: linear-gradient(145deg, rgba(102,192,244,.13), rgba(26,159,255,.02));
+    box-shadow: 0 0 0 3px rgba(102,192,244,.06);
   }
-  .seg button:hover { background: var(--surface-2); color: var(--strong); }
-  .seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--strong); box-shadow: inset 0 -2px 0 var(--accent); }
+  .logo::before { content: ""; position: absolute; width: 4px; height: 19px; border-radius: 2px; left: 12px; top: 4px; background: var(--blue); transform: rotate(35deg); }
+  .logo::after { content: ""; position: absolute; width: 7px; height: 7px; border-radius: 50%; left: 9px; top: 10px; background: #171a21; border: 2px solid var(--blue); }
+  #nav { height: 100%; display: flex; align-items: stretch; }
+  nav .navin { display: flex; align-items: stretch; gap: 5px; height: 100%; }
+  nav button {
+    height: 100%; padding: 0 17px; border: 0; border-radius: 0;
+    display: flex; align-items: center; gap: 9px;
+    background: transparent; color: #9daab5; font-size: 13px; font-weight: 700;
+    letter-spacing: .045em; text-transform: uppercase; position: relative;
+  }
+  nav button::after { content: ""; position: absolute; height: 2px; bottom: 0; left: 15px; right: 15px; background: transparent; }
+  nav button:hover { color: #fff; background: rgba(255,255,255,.035); filter: none; }
+  nav button[aria-pressed="true"] { color: var(--blue); background: linear-gradient(180deg, transparent 60%, rgba(102,192,244,.07)); }
+  nav button[aria-pressed="true"]::after { background: var(--blue); }
+  nav svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .header-user { display: flex; align-items: center; gap: 9px; color: #9caab5; font-size: 12px; white-space: nowrap; }
+  .avatar { width: 27px; height: 27px; border-radius: 3px; display: grid; place-items: center; color: #d9f1ff; background: linear-gradient(145deg, #27658b, #19384e); border: 1px solid #3d718f; font-size: 11px; font-weight: 700; }
+  .iconbtn { width: 32px; min-width: 32px; padding: 0; border-radius: 3px; }
+  .header-action { height: 32px; padding: 0 11px; font-size: 12px; }
+
+  /* Library rail */
+  .sidebar {
+    position: fixed; z-index: 55; left: 0; top: 62px; bottom: 0;
+    width: 226px; padding: 23px 13px 16px;
+    display: flex; flex-direction: column; gap: 17px;
+    overflow-y: auto; background: #171a21; border-right: 1px solid #10151c;
+  }
+  .side-label { padding: 0 10px 8px; color: #687783; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  #sideTabs { display: grid; gap: 2px; }
+  .side-link {
+    display: flex; align-items: center; width: 100%; min-height: 34px; gap: 10px;
+    padding: 6px 10px; border: 0; border-radius: 3px; background: transparent;
+    color: #9daab5; text-align: left; font-size: 13px; font-weight: 400;
+  }
+  .side-link:hover { color: #fff; background: rgba(255,255,255,.055); filter: none; }
+  .side-link[aria-pressed="true"] { color: #fff; background: #26394d; box-shadow: inset 2px 0 0 var(--blue); }
+  .side-link .side-count { margin-left: auto; color: #6f8493; font-size: 11px; font-variant-numeric: tabular-nums; }
+  .side-link[aria-pressed="true"] .side-count { color: var(--blue); }
+  .side-symbol { width: 17px; color: #6f8798; text-align: center; font-size: 12px; }
+  .side-divider { height: 1px; background: #27313c; margin: 0 8px; }
+  .side-bottom { margin-top: auto; border-top: 1px solid #29333e; padding: 15px 5px 0; }
+  .side-user { padding: 0 7px 12px; color: #80909c; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .side-bottom .side-action { width: 100%; justify-content: flex-start; margin-top: 5px; }
+
+  main.wrap { margin-left: 226px; width: calc(100% - 226px); min-height: calc(100vh - 62px); padding: 34px clamp(24px, 4vw, 62px) 76px; }
+  main > section { max-width: 1540px; margin: 0 auto; }
 
   /* Controls */
-  input, select, button { font-family: inherit; font-size: 14px; }
-  input, select {
-    background: #101822; color: var(--text);
-    border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 8px 12px; height: 36px; outline: none;
-    transition: border-color 0.15s;
+  input, select, textarea, button { font: inherit; }
+  input, select, textarea {
+    width: 100%; height: 38px; padding: 0 11px;
+    color: var(--text); background: #101923; border: 1px solid #354a5c;
+    border-radius: 3px; font-size: 14px; box-shadow: inset 0 1px 2px rgba(0,0,0,.24);
   }
-  input::placeholder { color: var(--faint); }
-  input:focus-visible, select:focus-visible { border-color: var(--accent); }
-  input:disabled { opacity: 0.55; cursor: not-allowed; }
+  input::placeholder, textarea::placeholder { color: #647584; }
+  input:hover, select:hover, textarea:hover { border-color: #4b6a83; }
+  textarea { height: 84px; padding: 10px 11px; resize: vertical; }
+  input[type=range] { padding: 0; accent-color: var(--blue); height: 28px; border: 0; background: none; box-shadow: none; }
   button {
-    height: 36px; padding: 0 16px;
-    border: 1px solid transparent; border-radius: var(--radius);
-    background: var(--accent-strong); color: #fff; font-weight: 500; cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    cursor: pointer; height: 36px; padding: 0 14px;
+    color: #eaf6ff; background: linear-gradient(180deg, #2c82b5, #1a6593);
+    border: 1px solid #3984ac; border-radius: 3px;
+    font-size: 13px; font-weight: 700; text-shadow: 0 1px 1px rgba(0,0,0,.4);
+    transition: background .14s ease, border-color .14s ease, filter .14s ease, transform .08s ease;
   }
-  button:hover { background: #3aaeff; }
-  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  button.secondary { background: var(--surface-2); color: var(--text); border-color: var(--border); }
-  button.secondary:hover { background: #2a4058; color: var(--strong); }
-  button.danger { background: transparent; color: #e58a87; border-color: #5a2f2f; }
-  button.danger:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
-  button.solid-danger { background: var(--danger); }
-  button.solid-danger:hover { background: #e2615d; }
-  button.locked { opacity: 0.4; cursor: not-allowed; }
-
-  main { padding: 28px 0 64px; }
-
-  /* Summary strip */
-  .summary {
-    display: grid; grid-template-columns: repeat(5, 1fr);
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    margin-bottom: 20px;
-  }
-  .stat { padding: 16px 20px; border-left: 1px solid var(--line); min-width: 0; }
-  .stat:first-child { border-left: 0; }
-  .stat dt { color: var(--muted); font-size: 13px; margin: 0 0 4px; }
-  .stat dd { margin: 0; color: var(--strong); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .stat dd.small { font-size: 16px; line-height: 33px; }
-
-  /* Toolbar */
-  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
-  .toolbar input[type="search"] { flex: 1 1 260px; min-width: 0; max-width: 420px; }
-  .count { margin-left: auto; color: var(--muted); font-size: 13px; }
-
-  /* Table */
-  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 820px; }
-  th, td { text-align: left; padding: 10px 16px; vertical-align: middle; }
-  th { background: var(--head); border-bottom: 1px solid var(--border); white-space: nowrap; padding-top: 0; padding-bottom: 0; }
-  th, th button.sort { color: var(--muted); font-weight: 500; font-size: 13px; }
-  th button.sort {
-    background: transparent; border: 0; height: 42px; padding: 0; border-radius: 0;
-    display: inline-flex; align-items: center; gap: 8px;
-  }
-  th button.sort:hover { color: var(--strong); background: transparent; }
-  th[aria-sort] button.sort { color: var(--strong); }
-  th[aria-sort="ascending"] button.sort::after { content: ""; border: solid transparent; border-width: 0 4px 5px; border-bottom-color: var(--accent); }
-  th[aria-sort="descending"] button.sort::after { content: ""; border: solid transparent; border-width: 5px 4px 0; border-top-color: var(--accent); }
-  td { border-bottom: 1px solid var(--line); }
-  tbody tr:last-child td { border-bottom: 0; }
-  tbody tr:hover td { background: var(--hover); }
-
-  .game { display: flex; align-items: center; gap: 14px; min-width: 0; }
-  .thumb {
-    width: 92px; height: 35px; flex: none; border-radius: 2px;
-    background: var(--head); border: 1px solid var(--line); object-fit: cover; display: block;
-  }
-  .game-name { color: var(--strong); font-weight: 500; }
-  .game-id { color: var(--faint); font-size: 12px; font-variant-numeric: tabular-nums; }
-
-  .status { display: inline-flex; align-items: center; gap: 8px; text-transform: capitalize; }
-  .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-  .status-owned { color: var(--owned); }
-  .status-wishlist { color: var(--wishlist); }
-
-  .play { min-width: 120px; }
-  .play-text { font-variant-numeric: tabular-nums; }
-  .play-bar { height: 3px; background: var(--line); border-radius: 2px; margin-top: 6px; overflow: hidden; }
-  .play-bar i { display: block; height: 100%; background: var(--accent-strong); }
-
-  .tag { display: inline-block; padding: 1px 8px; border: 1px solid var(--border); border-radius: 2px; color: var(--muted); font-size: 12px; }
-  td.notes { color: var(--muted); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  td.actions { white-space: nowrap; text-align: right; }
-  td.actions button { height: 30px; padding: 0 12px; font-size: 13px; }
-  td.actions button + button { margin-left: 6px; }
-
-  .empty { text-align: center; color: var(--muted); padding: 56px 16px; }
-  .empty strong { display: block; color: var(--strong); font-weight: 500; font-size: 16px; margin-bottom: 4px; }
-  .empty button { margin-top: 16px; }
-
-  /* Toast */
-  .toast {
-    position: fixed; bottom: 24px; right: 24px; max-width: 400px; padding: 12px 16px;
-    background: var(--surface-2); color: var(--strong);
-    border: 1px solid var(--border); border-left-width: 3px; border-radius: var(--radius);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.45);
-    transform: translateY(16px); opacity: 0; pointer-events: none;
-    transition: transform 0.2s ease, opacity 0.2s ease; z-index: 200;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.error { border-left-color: var(--danger); }
-  .toast.success { border-left-color: var(--owned); }
-
-  /* Modals */
-  .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(8,11,15,0.8);
-    display: none; align-items: center; justify-content: center; padding: 16px; z-index: 100;
-  }
-  .modal-backdrop.show { display: flex; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    width: 100%; max-width: 460px; max-height: 100%; overflow-y: auto;
-    display: flex; flex-direction: column;
-  }
-  .modal h2 { margin: 0; padding: 18px 24px; font-size: 16px; font-weight: 500; color: var(--strong); border-bottom: 1px solid var(--border); }
-  .modal .body { padding: 20px 24px; }
-  .modal .body p { margin: 0; color: var(--text); }
-  .modal .fields { padding: 20px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 12px; }
-  .modal .fields .full { grid-column: 1 / -1; }
-  .modal .fields > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .modal label { font-size: 13px; color: var(--muted); }
-  .modal .actions { display: flex; gap: 8px; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid var(--border); background: var(--head); }
-
-  [hidden] { display: none !important; }
-
-  /* Hero */
-  .hero {
-    position: relative; display: flex; flex-direction: column; justify-content: flex-end;
-    min-height: 400px; margin-bottom: 24px; overflow: hidden;
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  }
-  .hero-img {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; object-position: 75% 20%;
-    opacity: 0; transition: opacity 0.7s ease;
-  }
-  .hero-img.loaded { opacity: 1; }
-  .hero::before {
-    content: ""; position: absolute; inset: 0; z-index: 1;
-    background:
-      linear-gradient(90deg, rgba(23,26,33,0.97) 0%, rgba(23,26,33,0.7) 36%, rgba(23,26,33,0) 74%),
-      linear-gradient(0deg, rgba(23,26,33,1) 0%, rgba(23,26,33,0) 40%);
-  }
-  .hero.plain { min-height: 0; }
-  .hero.plain::before, .hero.plain .hero-img { display: none; }
-  .hero-body { position: relative; z-index: 2; max-width: 660px; padding: 0 32px 28px; }
-  .hero-kicker { color: var(--accent); font-size: 13px; font-weight: 500; margin-bottom: 10px; }
-  .hero-title {
-    margin: 0 0 12px; font-size: clamp(30px, 4.6vw, 52px); line-height: 1.04;
-    font-weight: 600; letter-spacing: -0.02em; color: var(--strong); text-wrap: balance;
-  }
-  .hero-meta { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 20px; font-size: 15px; }
-  .hero .summary {
-    position: relative; z-index: 2; margin: 0;
-    border: 0; border-top: 1px solid rgba(42,63,85,0.8); border-radius: 0;
-    background: rgba(14,17,22,0.84);
-  }
-  .hero .stat { border-left-color: rgba(42,63,85,0.8); }
-
-  /* Cover grid */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(172px, 1fr)); gap: 24px 18px; }
-  .grid .empty { grid-column: 1 / -1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
-  .card { position: relative; min-width: 0; }
-  .cover {
-    position: relative; display: block; width: 100%; height: auto; aspect-ratio: 2 / 3; padding: 0;
-    background: var(--head); border: 1px solid var(--line); border-radius: var(--radius);
-    overflow: hidden; cursor: pointer;
-    transition: transform 0.18s ease, border-color 0.18s ease;
-  }
-  .cover:hover { background: var(--head); border-color: var(--accent); transform: translateY(-4px); }
-  .cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: filter 0.18s ease; }
-  .cover-fallback {
-    display: none; position: absolute; inset: 0; padding: 16px; align-items: center; justify-content: center;
-    text-align: center; color: var(--strong); font-weight: 500; background: var(--surface-2);
-  }
-  .card.noimg .cover-fallback { display: flex; }
-  .card.wish .cover-img { filter: saturate(0.4) brightness(0.78); }
-  .card.wish .cover:hover .cover-img { filter: none; }
-  .cover-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(0,0,0,0.55); }
-  .cover-bar i { display: block; height: 100%; background: var(--accent-strong); }
+  button:hover { background: linear-gradient(180deg, #3699d1, #2279aa); border-color: #66c0f4; filter: none; }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .48; cursor: default; }
+  :is(button,input,select,textarea,summary):focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .btn2 { color: #c7d5e0; background: linear-gradient(180deg, #334a5e, #26394d); border-color: #40586b; }
+  .btn2:hover { background: linear-gradient(180deg, #405d76, #304a60); border-color: #6d8da5; }
+  .ghost { color: #9caab5; background: transparent; border-color: transparent; text-shadow: none; }
+  .ghost:hover { color: #fff; background: rgba(255,255,255,.07); border-color: transparent; }
+  .danger { color: #f3b0ad; background: transparent; border-color: #694343; text-shadow: none; }
+  .danger:hover { color: #fff; background: #a63e3e; border-color: #c95c5c; }
+  .sm { height: 30px; padding: 0 10px; font-size: 12px; }
+  .lg { height: 44px; padding: 0 22px; font-size: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips.scroll { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 3px; }
+  .chips.scroll::-webkit-scrollbar { display: none; }
   .chip {
-    position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 2px;
-    background: rgba(14,17,22,0.9); color: var(--wishlist); font-size: 12px; font-weight: 500;
+    flex: none; height: 31px; padding: 0 11px; border-radius: 3px;
+    color: #b6c6d3; background: #26394d; border: 1px solid #344e64;
+    font-weight: 600; font-size: 12px; text-transform: capitalize; text-shadow: none;
   }
-  button.card-del {
-    position: absolute; top: 8px; right: 8px; height: 28px; padding: 0 10px; font-size: 12px;
-    background: rgba(14,17,22,0.92); opacity: 0;
-  }
-  .card:hover button.card-del, .card:focus-within button.card-del { opacity: 1; }
-  .card:hover button.card-del.locked, .card:focus-within button.card-del.locked { opacity: 0.45; }
-  .card-cap { padding: 10px 2px 0; }
-  .card-name { color: var(--strong); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .card-sub { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
-  .grid.intro .card { animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i) * 35ms); }
-  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
-  @media (max-width: 600px) {
-    .hero { min-height: 320px; }
-    .hero-body { padding: 0 20px 20px; }
-    .grid { grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: 20px 12px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .grid.intro .card { animation: none; }
-    .cover:hover { transform: none; }
-  }
+  .chip:hover { color: #fff; background: #34536b; border-color: #52738c; filter: none; }
+  .chip[aria-pressed="true"] { color: #e8f6ff; background: #245d82; border-color: #4e9bc6; box-shadow: inset 0 0 0 1px rgba(102,192,244,.12); }
+  .chip .cnt { color: #7893a6; font-size: 11px; margin-left: 6px; }
+  .lab { display: block; margin-bottom: 7px; color: #9daebc; font-size: 12px; font-weight: 700; }
+  .seg5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; }
+  .seg5 .chip { border-radius: 3px; padding: 0; }
 
-  @media (max-width: 860px) {
-    .summary { grid-template-columns: repeat(2, 1fr); }
-    .stat:nth-child(odd) { border-left: 0; }
-    .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
-    .stat:last-child { grid-column: 1 / -1; }
+  /* Panels */
+  .card { background: #1b2838; border: 1px solid #2a475e; border-radius: 3px; padding: 19px; box-shadow: 0 2px 5px rgba(0,0,0,.12); }
+  .card h2 { color: #e5edf4; font-size: 17px; letter-spacing: -.015em; }
+  .empty { color: var(--muted); text-align: center; padding: 43px 18px; }
+  .empty b { display: block; margin-bottom: 7px; color: #e5edf4; font-size: 17px; }
+  .empty p { margin-bottom: 16px; }
+  .row-btns { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+  .narrow { max-width: 720px; margin-bottom: 16px; }
+  .narrow h2 { margin-bottom: 13px; }
+  .field { margin-bottom: 14px; }
+  .note { color: #7e919f; font-size: 12px; margin-top: 11px; }
+
+  /* Sign in */
+  #loginView { min-height: 100vh; display: grid; place-items: start center; padding: 10vh 18px 40px; background: radial-gradient(ellipse at 50% 20%, #243c52 0, #1b2838 48%, #151e29 100%); }
+  .login { width: min(100%, 420px); margin: 0; padding: 31px; background: #172331; border: 1px solid #34536a; box-shadow: var(--shadow); }
+  .login .brand { margin-bottom: 28px; }
+  .login h1 { color: var(--text-strong); font-size: 25px; margin-bottom: 5px; }
+  .login .field { margin-top: 17px; }
+  .login button { width: 100%; margin-top: 14px; }
+  .form-error { color: #f09a96; min-height: 20px; margin-top: 12px; font-size: 13px; }
+
+  /* Steam game artwork */
+  .cv {
+    position: relative; width: 100%; aspect-ratio: 2/3; overflow: hidden;
+    background: linear-gradient(145deg, hsl(var(--h) 38% 33%), hsl(calc(var(--h) + 38) 43% 15%));
+    border: 1px solid rgba(141,176,200,.2); border-radius: 2px;
   }
-  @media (max-width: 600px) {
-    .wrap { padding: 0 16px; }
-    .header-inner { height: auto; padding: 14px 0; flex-wrap: wrap; }
-    .modal .fields { grid-template-columns: 1fr; }
-    .count { margin-left: 0; width: 100%; }
+  .cv img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .cv .ph { position: absolute; inset: 0; display: grid; place-items: center; padding: 12px; color: rgba(255,255,255,.88); text-align: center; font-size: 13px; font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
+  .cv-hero { aspect-ratio: 16/9; }
+  .cv-hero img { object-fit: cover; }
+  .badge { position: absolute; z-index: 2; top: 7px; left: 7px; padding: 3px 7px; color: #d8e7f2; background: rgba(10,19,28,.88); border: 1px solid rgba(160,190,210,.18); border-radius: 2px; font-size: 10px; font-weight: 700; text-transform: capitalize; }
+  .badge.playing { color: #b8e17c; } .badge.paused { color: #e5bd74; } .badge.wishlist { color: #8bd4e9; }
+  .badge.completed { color: #a9c8ff; } .badge.dropped { color: #8d9aa4; }
+  .pips { position: absolute; z-index: 2; top: 7px; right: 7px; padding: 3px 7px; color: #e8c46d; background: rgba(10,19,28,.88); border: 1px solid rgba(160,190,210,.18); border-radius: 2px; font-size: 10px; font-weight: 700; }
+  .pbar { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(0,0,0,.7); }
+  .pbar i { display: block; height: 100%; background: #8bc53f; box-shadow: 0 0 7px rgba(139,197,63,.45); }
+
+  /* Today / discovery */
+  #greet { color: var(--text-strong); }
+  #startCard { border-left: 3px solid var(--blue); padding: 19px 20px; }
+  #startCard > p { margin-top: 4px; }
+  .steps { display: grid; gap: 7px; margin-top: 14px; }
+  .step { min-width: 0; display: flex; gap: 12px; align-items: center; padding: 10px 12px; background: #202f40; border: 1px solid #30485e; border-radius: 2px; }
+  .step .n { width: 25px; height: 25px; display: grid; place-items: center; flex: none; color: #c1d3df; background: #101923; border: 1px solid #3a5266; border-radius: 2px; font-size: 12px; font-weight: 700; }
+  .step.done .n { color: #17210b; background: var(--ok); border-color: var(--ok); }
+  .step.done .t b { color: #80919d; text-decoration: line-through; }
+  .step .t { flex: 1; min-width: 0; }
+  .step .t b { color: #e2ebf2; font-size: 13px; }
+  .step .t small { display: block; color: #91a4b3; font-size: 12px; }
+  .start-foot { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+  .banner { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; border-left: 3px solid var(--blue); }
+  .picker { padding: 18px 20px 19px; background: #1a2736; }
+  .picker h2 { color: #edf4f9; margin-bottom: 13px; }
+  .picker .lab { margin-top: 12px; }
+  .picker .lab:first-of-type { margin-top: 0; }
+  .pick { display: flex; align-items: stretch; gap: 23px; padding: 16px; background: linear-gradient(105deg, #1e3347, #1b2838 52%, #1b2838); border: 1px solid #35566e; border-left: 3px solid var(--blue); }
+  .pick-cover { width: min(34%, 340px); flex: none; align-self: center; }
+  .pick-cover .cv { box-shadow: 0 7px 22px rgba(0,0,0,.38); }
+  .pick-body { min-width: 0; flex: 1; display: flex; flex-direction: column; padding: 5px 2px 3px 0; }
+  .kicker { color: var(--blue); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+  .pick h2 { margin: 5px 0 7px; color: #f2f7fa; font-size: clamp(23px, 3vw, 34px); line-height: 1.1; letter-spacing: -.035em; }
+  .why { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0 14px; }
+  .why span { padding: 3px 7px; color: #a8d5eb; background: rgba(102,192,244,.1); border: 1px solid rgba(102,192,244,.2); border-radius: 2px; font-size: 11px; }
+  .why span.neg { color: #e7a2a0; background: rgba(215,91,91,.1); border-color: rgba(215,91,91,.2); }
+  .pick-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: auto; }
+  .pick-actions [data-act="start"] { color: #172006; background: linear-gradient(180deg, #a4d007, #78a900); border-color: #b1db29; text-shadow: 0 1px rgba(255,255,255,.15); }
+  .pick-actions [data-act="start"]:hover { background: linear-gradient(180deg, #b9e52d, #8dbf0b); }
+  .tip { margin-top: 10px; padding: 9px 12px; color: #d9c28f; background: rgba(160,126,54,.12); border: 1px solid rgba(190,154,75,.25); border-radius: 2px; font-size: 12px; }
+  .stack { display: grid; gap: 6px; }
+  .rowcard { display: flex; align-items: center; gap: 12px; width: 100%; height: auto; padding: 7px 10px 7px 7px; text-align: left; color: var(--text); background: #1b2838; border: 1px solid #2b465b; border-radius: 2px; font-weight: 400; }
+  .rowcard:hover { color: #fff; background: #26394d; border-color: #4b718d; filter: none; }
+  .rowcard .mini { width: 39px; flex: none; }
+  .rowcard .mini .cv { aspect-ratio: 2/3; }
+  .rowcard b { display: block; color: #dce6ed; font-size: 13px; font-weight: 700; }
+  .rowcard .meta { display: block; margin-top: 2px; font-size: 11px; }
+  .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: #2b465b; border: 1px solid #2b465b; }
+  .stat { height: auto; padding: 13px 15px; text-align: left; color: var(--text); background: #1b2838; border: 0; border-radius: 0; font-weight: 400; }
+  .stat:hover { background: #26394d; filter: none; }
+  .stat b { display: block; color: #eaf3f9; font-size: 25px; line-height: 1.2; font-weight: 700; letter-spacing: -.03em; }
+  .stat span { color: #8ca0af; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+  details.more { margin-top: 11px; }
+  details.more summary { cursor: pointer; width: fit-content; color: #88a2b4; font-size: 12px; padding: 4px 0; }
+  details.more summary:hover { color: var(--blue); }
+  .kv { display: grid; grid-template-columns: repeat(auto-fill,minmax(190px,1fr)); gap: 7px; margin-top: 10px; }
+  .kv div { padding: 9px 11px; background: #182431; border: 1px solid #2a4357; border-radius: 2px; }
+  .kv span { display: block; color: #8295a4; font-size: 11px; }
+  .kv b { color: #d5e0e8; font-size: 13px; font-weight: 700; }
+
+  /* Library */
+  .libhead { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 3px 0 18px; }
+  .libhead .h1 { margin: 0 0 4px; }
+  .libhead p { color: #879aa9; font-size: 13px; }
+  .filters { display: flex; gap: 9px; align-items: flex-start; flex-wrap: wrap; margin: 13px 0 8px; }
+  .filters > input { flex: 1 1 260px; max-width: 520px; }
+  .filters details { position: relative; }
+  .filters details summary { height: 38px; display: flex; align-items: center; padding: 0 13px; color: #b7c7d3; background: #26394d; border: 1px solid #354f65; border-radius: 3px; white-space: nowrap; }
+  .filters details[open] summary { color: #fff; border-color: #5a839f; }
+  .fgrid { min-width: 285px; position: absolute; right: 0; top: 43px; z-index: 20; display: grid; grid-template-columns: 1fr; gap: 8px; padding: 12px; background: #172331; border: 1px solid #3b566b; box-shadow: var(--shadow); }
+  #libCount { color: #7f94a4; font-size: 12px; margin: 12px 0 2px; }
+  #tabs { display: none; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(145px,1fr)); gap: 22px 15px; margin-top: 15px; }
+  .gcard { display: block; width: 100%; height: auto; padding: 0; color: inherit; background: transparent; border: 0; border-radius: 2px; text-align: left; font-weight: 400; text-shadow: none; }
+  .gcard:hover { background: transparent; filter: none; }
+  .gcard .cv { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+  .gcard:hover .cv { transform: translateY(-3px); border-color: #7db9df; box-shadow: 0 8px 20px rgba(0,0,0,.38); }
+  .gcard.dim .cv img { filter: saturate(.4) brightness(.78); }
+  .gname { display: -webkit-box; margin-top: 7px; overflow: hidden; color: #c7d5e0; font-size: 13px; line-height: 1.3; font-weight: 700; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .gcard:hover .gname { color: #fff; }
+  .gsub { margin-top: 3px; color: #718797; font-size: 11px; }
+
+  /* Settings */
+  #settingsView .view-intro { margin-bottom: 22px; }
+  #settingsView .card { margin-bottom: 13px; }
+  #settingsView .meta { line-height: 1.55; }
+  #settingsView .chips { margin-top: 12px; }
+
+  /* Dialogs and sheets */
+  .overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 22px; background: rgba(5,10,16,.78); backdrop-filter: blur(3px); }
+  .overlay.show { display: flex; }
+  #confirmModal { z-index: 130; }
+  .sheet { width: 100%; max-width: 700px; max-height: calc(100vh - 44px); max-height: calc(100dvh - 44px); display: flex; flex-direction: column; overflow: hidden; background: #1b2838; border: 1px solid #3b5a70; border-radius: 4px; box-shadow: 0 20px 70px rgba(0,0,0,.6); }
+  .sheet-head { min-height: 51px; display: flex; align-items: center; gap: 12px; padding: 10px 17px; background: #172331; border-bottom: 1px solid #2c465b; }
+  .sheet-head b { color: #e8f0f6; font-size: 14px; }
+  .sheet-body { display: grid; gap: 18px; align-content: start; overflow-y: auto; padding: 19px; }
+  .sheet-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 11px 17px calc(11px + env(safe-area-inset-bottom)); background: #172331; border-top: 1px solid #2c465b; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+  .grid2 .full { grid-column: 1/-1; }
+  .ghead { display: flex; align-items: center; gap: 14px; }
+  .ghead .gc { width: 70px; flex: none; }
+  .ghead .gn { color: #f0f5f8; font-size: 19px; font-weight: 700; line-height: 1.2; }
+  .srow { display: flex; gap: 8px; margin-top: 9px; }
+  .srow input { min-width: 0; }
+  .srow input:first-child { width: 112px; flex: none; }
+  .srow button { flex: none; }
+  .sess { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #2b4356; }
+  .sess:last-child { border-bottom: 0; }
+  .sess b { color: #e0eaf1; font-weight: 700; }
+  .tri-top { display: flex; align-items: center; gap: 15px; }
+  .tri-top .tc { width: 76px; flex: none; }
+  .tri-name { color: #eef4f8; font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .help ol { display: grid; gap: 12px; margin: 0; padding-left: 20px; }
+  .help li { color: #a4b4c0; }
+  .help li b { color: #e2ebf1; }
+  .help code { padding: 1px 5px; color: #d9eaf6; background: #26394d; border-radius: 2px; font-size: 12px; }
+  .toast { position: fixed; z-index: 300; right: 22px; bottom: 22px; max-width: 420px; padding: 11px 15px; color: #dce9f2; background: #203447; border: 1px solid #46647b; border-left: 3px solid var(--ok); border-radius: 3px; box-shadow: var(--shadow); transform: translateY(14px); opacity: 0; pointer-events: none; transition: .18s; }
+  .toast.show { transform: none; opacity: 1; }
+  .toast.error { border-left-color: var(--danger); }
+  .toast.warn { border-left-color: #d4a84d; }
+
+  @media (max-width: 1050px) {
+    main.wrap { padding: 29px 28px 70px; }
+    .sidebar { width: 205px; }
+    main.wrap { margin-left: 205px; width: calc(100% - 205px); }
+    .grid { grid-template-columns: repeat(auto-fill,minmax(132px,1fr)); gap: 19px 12px; }
+    .hbar { gap: 12px; padding: 0 17px; }
+    nav button { padding: 0 12px; }
   }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 760px) {
+    header { height: 56px; }
+    .hbar { height: 56px; padding: 0 13px; gap: 10px; }
+    .brand { font-size: 13px; gap: 8px; }
+    .logo { width: 27px; height: 27px; }
+    .logo::before { left: 10px; top: 3px; height: 17px; }
+    .logo::after { left: 7px; top: 9px; }
+    .brand-copy small { display: none; }
+    .header-user { display: none; }
+    .header-action { padding: 0 9px; }
+    #nav { position: fixed; z-index: 160; left: 0; right: 0; bottom: 0; top: auto; height: calc(57px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: #171a21; border-top: 1px solid #344656; box-shadow: 0 -8px 22px rgba(0,0,0,.3); }
+    nav .navin { width: 100%; justify-content: stretch; gap: 0; }
+    nav button { flex: 1; justify-content: center; flex-direction: column; gap: 2px; height: 56px; padding: 0; font-size: 9px; letter-spacing: .06em; }
+    nav button::after { left: 28%; right: 28%; bottom: auto; top: 0; }
+    nav svg { width: 18px; height: 18px; }
+    .sidebar { display: none; }
+    main.wrap { width: 100%; min-height: calc(100vh - 56px); margin: 0; padding: 25px 17px calc(88px + env(safe-area-inset-bottom)); }
+    .view-intro { margin-bottom: 20px; }
+    .h1 { font-size: 27px; }
+    .sect { margin-top: 16px; }
+    .card { padding: 15px; }
+    #startCard { padding: 15px; }
+    .step { gap: 9px; padding: 9px; }
+    .step .t small { font-size: 11px; }
+    .step > button { flex: none; padding: 0 8px; }
+    .picker { padding: 15px; }
+    .pick { gap: 13px; padding: 12px; }
+    .pick-cover { width: 35%; }
+    .pick h2 { font-size: 22px; }
+    .pick-body .meta { font-size: 11px; }
+    .pick-actions { gap: 5px; }
+    .pick-actions button { padding: 0 9px; font-size: 11px; }
+    .stats { grid-template-columns: repeat(2,1fr); }
+    .stat { padding: 11px 12px; }
+    .stat b { font-size: 22px; }
+    .libhead { align-items: flex-start; }
+    .libhead > button { flex: none; }
+    #tabs { display: flex; margin: 0 0 12px; }
+    .filters { margin-top: 8px; }
+    .filters > input { max-width: none; }
+    .filters details { width: 100%; }
+    .filters details summary { width: fit-content; }
+    .fgrid { position: static; min-width: 0; margin-top: 8px; }
+    .grid { grid-template-columns: repeat(auto-fill,minmax(112px,1fr)); gap: 17px 10px; }
+    .gname { font-size: 12px; }
+    .overlay { align-items: flex-end; padding: 0; }
+    .sheet { max-width: none; max-height: 94vh; max-height: 94dvh; border-radius: 8px 8px 0 0; }
+    #confirmModal { align-items: center; padding: 15px; }
+    #confirmModal .sheet { border-radius: 4px; max-height: none; }
+    .sheet-head { min-height: 47px; padding: 9px 14px; }
+    .sheet-body { padding: 15px; gap: 16px; }
+    .sheet-foot { padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); }
+    .grid2 { grid-template-columns: 1fr; }
+    .grid2 .full { grid-column: auto; }
+    .toast { left: 12px; right: 12px; bottom: calc(70px + env(safe-area-inset-bottom)); max-width: none; }
+  }
+  @media (max-width: 430px) {
+    .hbar { gap: 7px; }
+    .brand { font-size: 12px; }
+    #helpBtn { display: none; }
+    .pick { align-items: flex-start; }
+    .pick-cover { width: 31%; }
+    .pick h2 { font-size: 19px; }
+    .pick-actions { margin-top: 12px; }
+    .pick-actions button { height: 31px; }
+    .why span { font-size: 10px; }
+    .grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+    .srow { flex-wrap: wrap; }
+    .srow input:first-child { width: 100%; }
+    .srow button { flex: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
-<header>
-  <div class="wrap header-inner">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true"><span></span></div>
-      <h1>Steam Game Library</h1>
+
+<!-- LOGIN -->
+<div id="loginView" hidden>
+  <form class="login card" id="loginForm">
+    <div class="brand"><span class="logo"></span>Backlog Compass</div>
+    <h1>Welcome back</h1>
+    <p class="meta">Sign in to pick what to play next.</p>
+    <div class="field"><label class="lab" for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required /></div>
+    <div class="field"><label class="lab" for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required /></div>
+    <button type="submit" id="loginBtn" class="lg">Sign in</button>
+    <div class="form-error" id="loginError" role="alert"></div>
+  </form>
+</div>
+
+<!-- APP -->
+<div id="appView" hidden>
+  <header>
+    <div class="hbar">
+      <div class="brand"><span class="logo"></span><span class="brand-copy">BACKLOG COMPASS<small>YOUR GAME LIBRARY</small></span></div>
+      <nav id="nav" aria-label="Main">
+        <div class="navin">
+          <button type="button" data-view="today" aria-pressed="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Today</button>
+          <button type="button" data-view="library" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>Library</button>
+          <button type="button" data-view="settings" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Settings</button>
+        </div>
+      </nav>
+      <span class="spacer"></span>
+      <div class="header-user"><span class="avatar" id="headerAvatar">BC</span><span id="headerUser">Player</span></div>
+      <button class="btn2 iconbtn header-action" id="helpBtn" aria-label="How does this work?" title="How does this work?">?</button>
+      <button class="ghost sm header-action" id="logoutBtn">Log out</button>
     </div>
-    <div class="header-actions">
-      <div class="field-inline">
-        <span id="roleLabel">Role</span>
-        <div class="seg" role="group" aria-labelledby="roleLabel" id="roleSeg">
-          <button type="button" data-role="normal" aria-pressed="true">Normal</button>
-          <button type="button" data-role="master" aria-pressed="false">Master</button>
+  </header>
+  <aside class="sidebar" id="sidebar" aria-label="Library collections">
+    <div>
+      <div class="side-label">Your collection</div>
+      <div id="sideTabs"></div>
+    </div>
+    <div class="side-divider"></div>
+    <div class="side-bottom">
+      <div class="side-user" id="sideUser">Signed in</div>
+      <button class="btn2 side-action" data-act="sync">↻ &nbsp; Sync Steam library</button>
+      <button class="ghost side-action" data-act="manual">＋ &nbsp; Add a game</button>
+    </div>
+  </aside>
+
+  <main class="wrap">
+    <!-- TODAY -->
+    <section id="todayView">
+      <div class="view-intro">
+        <div class="eyebrow">YOUR NEXT SESSION</div>
+        <h1 class="h1" id="greet">Hey there</h1>
+        <p class="sub">Your library is ready. Let's find something worth playing.</p>
+      </div>
+
+      <div class="card sect" id="startCard" hidden></div>
+      <div class="card banner sect" id="triBanner" hidden></div>
+
+      <div class="card picker sect">
+        <h2>What should I play?</h2>
+        <span class="lab">How long do you have?</span>
+        <div class="chips scroll" id="timeChips"></div>
+        <span class="lab">What's the mood?</span>
+        <div class="chips" id="moodChips"></div>
+      </div>
+      <div class="sect" id="pickOut"></div>
+
+      <div class="sect" id="statsOut"></div>
+    </section>
+
+    <!-- LIBRARY -->
+    <section id="libraryView" hidden>
+      <div class="libhead">
+        <div><div class="eyebrow">YOUR COLLECTION</div><h1 class="h1">Library</h1><p>All your games, progress, and next adventures in one place.</p></div>
+        <button id="addBtn">＋ Add game</button>
+      </div>
+      <div class="chips scroll" id="tabs"></div>
+      <div class="filters">
+        <input id="fSearch" type="search" placeholder="Search your games" aria-label="Search your games" />
+        <details class="more" style="margin:0">
+          <summary>Filters &amp; sort</summary>
+          <div class="fgrid">
+            <select id="fPlatform" aria-label="Platform"><option value="">All platforms</option><option value="steam">Steam</option><option value="other">Other</option></select>
+            <input id="fMood" list="moodList" placeholder="Mood tag" maxlength="30" aria-label="Mood tag" />
+            <select id="fSort" aria-label="Sort">
+              <option value="updated_at:desc">Recently updated</option>
+              <option value="priority:desc">Priority (high first)</option>
+              <option value="priority:asc">Priority (low first)</option>
+              <option value="name:asc">Name A–Z</option>
+              <option value="name:desc">Name Z–A</option>
+              <option value="steam_playtime_minutes:desc">Most Steam playtime</option>
+              <option value="steam_playtime_minutes:asc">Least Steam playtime</option>
+            </select>
+          </div>
+        </details>
+      </div>
+      <div class="meta" id="libCount" aria-live="polite"></div>
+      <div class="grid" id="grid"></div>
+      <div class="center"><button class="btn2" id="loadMore" hidden>Load more</button></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settingsView" hidden>
+      <div class="view-intro"><div class="eyebrow">PREFERENCES & ACCOUNT</div><h1 class="h1">Settings</h1><p class="sub" id="accountLine"></p></div>
+
+      <div class="card narrow">
+        <h2>Profile</h2>
+        <div class="field"><label class="lab" for="sName">Display name</label><input id="sName" maxlength="60" /></div>
+        <div class="field">
+          <label class="lab" for="sSteam">SteamID64 <span class="hint">17 digits, or paste your profile link</span></label>
+          <input id="sSteam" placeholder="76561198000000000" autocomplete="off" />
+          <details class="more">
+            <summary>Where do I find my SteamID64?</summary>
+            <div class="meta" style="margin-top:8px">
+              <p>Open Steam, click your name, then <b>Profile</b>. If the address looks like <code>steamcommunity.com/profiles/76561198…</code>, that 17-digit number is your ID and you can paste the whole link above.</p>
+              <p style="margin-top:8px">If it looks like <code>/id/yourname</code>, paste that link into <b>steamid.io</b> and copy the <b>steamID64</b> value.</p>
+              <p style="margin-top:8px">Also set Steam → Profile → Edit Profile → Privacy Settings → <b>Game details = Public</b>, or Steam returns an empty library.</p>
+            </div>
+          </details>
+        </div>
+        <button id="saveProfileBtn">Save profile</button>
+      </div>
+
+      <div class="card narrow">
+        <h2>Steam sync</h2>
+        <p class="meta" style="margin-bottom:12px">Imports your owned games and total Steam playtime. It never changes your notes, moods, status, priority or progress, and never deletes anything.</p>
+        <p class="meta" id="syncInfo" style="margin-bottom:12px"></p>
+        <div class="chips">
+          <button id="syncBtn">Sync Steam library</button>
+          <button class="btn2" id="previewBtn">Preview owned games</button>
+        </div>
+        <div class="note" id="syncResult"></div>
+      </div>
+
+      <div class="card narrow">
+        <h2>Help</h2>
+        <div class="chips" style="margin-top:12px">
+          <button class="btn2" data-act="help">How Backlog Compass works</button>
+          <button class="btn2" id="showStartBtn">Show the getting-started checklist</button>
         </div>
       </div>
-      <button class="secondary" id="mockSyncBtn">Import mock data</button>
-      <button id="addBtn">Add game</button>
-    </div>
-  </div>
-</header>
+    </section>
+  </main>
+</div>
 
-<main class="wrap">
-  <section class="hero plain" id="hero">
-    <img class="hero-img" id="heroImg" alt="" />
-    <div class="hero-body" id="heroBody" hidden>
-      <div class="hero-kicker">Most played</div>
-      <h2 class="hero-title" id="heroTitle"></h2>
-      <div class="hero-meta" id="heroMeta"></div>
-      <button class="secondary" id="heroEdit">Edit game</button>
-    </div>
-    <dl class="summary" id="summary">
-      <div class="stat"><dt>Games</dt><dd id="stTotal">0</dd></div>
-      <div class="stat"><dt>Owned</dt><dd id="stOwned">0</dd></div>
-      <div class="stat"><dt>Wishlist</dt><dd id="stWish">0</dd></div>
-      <div class="stat"><dt>Total playtime</dt><dd id="stTime">0 h</dd></div>
-      <div class="stat"><dt>Average per game</dt><dd id="stTop">0 h</dd></div>
-    </dl>
-  </section>
+<datalist id="moodList"></datalist>
 
-  <div class="toolbar">
-    <input id="searchInput" type="search" placeholder="Search by name" aria-label="Search by name" />
-    <select id="statusFilter" aria-label="Filter by status">
-      <option value="">All statuses</option>
-      <option value="owned">Owned</option>
-      <option value="wishlist">Wishlist</option>
-    </select>
-    <select id="sortSelect" aria-label="Sort games">
-      <option value="" hidden>Sorted by column</option>
-      <option value="playtime_minutes:desc">Most played</option>
-      <option value="playtime_minutes:asc">Least played</option>
-      <option value="name:asc">Name A to Z</option>
-      <option value="name:desc">Name Z to A</option>
-      <option value="library_status:asc">Status</option>
-    </select>
-    <button class="secondary" id="refreshBtn">Refresh</button>
-    <div class="seg" id="viewSeg" role="group" aria-label="View">
-      <button type="button" data-view="grid" aria-pressed="true">Covers</button>
-      <button type="button" data-view="list" aria-pressed="false">List</button>
-    </div>
-    <span class="count" id="count" aria-live="polite"></span>
-  </div>
+<!-- GAME SHEET -->
+<div class="overlay" id="gameModal">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="gTitle">
+    <div class="sheet-head"><b id="gTitle">Game</b><span class="spacer"></span><button class="ghost sm" id="gClose">Close</button></div>
+    <div class="sheet-body">
+      <div class="grid2" id="addOnly">
+        <div class="full"><label class="lab" for="gName">Game name</label><input id="gName" maxlength="200" autocomplete="off" /></div>
+        <div><label class="lab" for="gPlatform">Where do you play it?</label>
+          <select id="gPlatform"><option value="other">Other (Switch, PlayStation, GOG…)</option><option value="steam">Steam</option></select></div>
+        <div id="gSteamWrap"><label class="lab" for="gSteamId">Steam store link or App ID</label><input id="gSteamId" placeholder="store.steampowered.com/app/413150" autocomplete="off" /></div>
+        <div class="full"><label class="lab" for="gUrl">Store link <span class="hint">(optional)</span></label><input id="gUrl" placeholder="https://" autocomplete="off" /></div>
+        <div class="full hint">Steam games arrive automatically with Sync. Use this for everything else.</div>
+      </div>
+      <div class="ghead" id="editHead"></div>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th data-sort="name" aria-sort="ascending"><button class="sort" type="button">Game</button></th>
-          <th data-sort="library_status"><button class="sort" type="button">Status</button></th>
-          <th data-sort="playtime_minutes"><button class="sort" type="button">Playtime</button></th>
-          <th data-sort="source"><button class="sort" type="button">Source</button></th>
-          <th>Notes</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="gamesBody">
-        <tr><td colspan="6" class="empty">Loading games</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="grid" id="grid"></div>
-</main>
-
-<div class="modal-backdrop" id="modal">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <h2 id="modalTitle">Add game</h2>
-    <div class="fields">
-      <input type="hidden" id="formAppId" />
-      <div class="full">
-        <label for="formName">Name</label>
-        <input id="formName" type="text" maxlength="200" placeholder="e.g. Hades II" />
+      <div><span class="lab">Status</span><div class="chips" id="gPlayChips"></div></div>
+      <div><span class="lab">Ownership</span><div class="chips" id="gAcqChips"></div></div>
+      <div>
+        <span class="lab">Priority <span class="hint">how much you want to play it</span></span>
+        <div class="seg5" id="gPrioChips"></div>
+        <div class="hint" style="margin-top:6px" id="gPrioHint"></div>
       </div>
       <div>
-        <label for="formSteamId">Steam App ID</label>
-        <input id="formSteamId" type="number" min="1" placeholder="e.g. 1145350" />
+        <span class="lab">Moods it fits <span class="hint">up to 10</span></span>
+        <div class="chips" id="gMoodChips"></div>
+        <input id="gNewTag" style="margin-top:10px" placeholder="Add your own mood, then press Enter" maxlength="30" autocomplete="off" />
       </div>
       <div>
-        <label for="formStatus">Status</label>
-        <select id="formStatus">
-          <option value="owned">Owned</option>
-          <option value="wishlist">Wishlist</option>
-        </select>
+        <span class="lab">Typical sitting <span class="hint">how long you usually play in one go</span></span>
+        <div class="chips" id="gTypChips"></div>
+        <input id="gTypical" type="number" min="5" max="1440" style="margin-top:10px" placeholder="or type minutes" />
       </div>
-      <div class="full">
-        <label for="formPlaytime">Playtime (minutes)</label>
-        <input id="formPlaytime" type="number" min="0" value="0" />
+      <div class="grid2">
+        <div><span class="lab">Progress: <output id="gProgLabel">0%</output></span><input id="gProgress" type="range" min="0" max="100" step="1" value="0" /></div>
+        <div><label class="lab" for="gRemaining">Hours left to finish <span class="hint">optional</span></label><input id="gRemaining" type="number" min="0" step="0.5" placeholder="e.g. 12" /></div>
       </div>
-      <div class="full">
-        <label for="formNotes">Notes (optional)</label>
-        <input id="formNotes" type="text" maxlength="1000" placeholder="Anything worth remembering" />
+      <div><label class="lab" for="gNotes">Notes</label><textarea id="gNotes" maxlength="2000"></textarea></div>
+
+      <div id="sessBox">
+        <span class="lab">Play sessions <span class="hint">your own journal, separate from Steam time</span></span>
+        <div class="chips" id="sDurChips"></div>
+        <div class="srow">
+          <input id="sDuration" type="number" min="1" max="1440" placeholder="Minutes" />
+          <input id="sNotes" maxlength="1000" placeholder="Note (optional)" />
+          <button id="sAdd">Log</button>
+        </div>
+        <div id="sessList" style="margin-top:8px"></div>
+        <button class="btn2 sm" id="sMore" hidden>Show older</button>
       </div>
     </div>
-    <div class="actions">
-      <button class="secondary" id="cancelBtn">Cancel</button>
-      <button id="saveBtn">Save game</button>
+    <div class="sheet-foot">
+      <button class="danger sm" id="gDelete">Remove from library</button>
+      <span class="spacer"></span>
+      <button class="btn2" id="gCancel">Cancel</button>
+      <button id="gSave">Save</button>
     </div>
   </div>
 </div>
 
-<div class="modal-backdrop" id="confirmModal">
-  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" style="max-width:400px">
-    <h2 id="confirmTitle">Delete game</h2>
-    <div class="body"><p id="confirmText"></p></div>
-    <div class="actions">
-      <button class="secondary" id="confirmNo">Cancel</button>
-      <button class="solid-danger" id="confirmYes">Delete game</button>
+<!-- QUICK SETUP -->
+<div class="overlay" id="triageModal">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Quick setup">
+    <div class="sheet-head"><b>Quick setup</b><span class="spacer"></span><span class="meta" id="triCount"></span><button class="ghost sm" id="triClose">Close</button></div>
+    <div class="sheet-body" id="triBody"></div>
+    <div class="sheet-foot" id="triFoot"></div>
+  </div>
+</div>
+
+<!-- HELP -->
+<div class="overlay" id="helpModal">
+  <div class="sheet help" role="dialog" aria-modal="true" aria-label="How it works">
+    <div class="sheet-head"><b>How Backlog Compass works</b><span class="spacer"></span><button class="ghost sm" id="helpClose">Close</button></div>
+    <div class="sheet-body">
+      <ol>
+        <li><b>1. Get your games in.</b> Add your SteamID64 in Settings and press Sync. For Switch, PlayStation, GOG and others, use <b>Add game</b> in the Library.</li>
+        <li><b>2. Tell it about them.</b> Each game has a <b>priority</b> (how much you want to play it), <b>moods</b> it suits and a <b>typical sitting</b> length. <b>Quick setup</b> on the Today page walks through them one at a time.</li>
+        <li><b>3. Ask what to play.</b> On Today, tap how long you have and the mood you're in. You get a pick and the reasons behind it.</li>
+        <li><b>4. Track it.</b> Set a status (Backlog, Playing, Paused, Completed, Dropped), update progress and log sessions. Steam playtime and your logged sessions are kept separate.</li>
+      </ol>
+      <div class="meta">How picks are scored: priority × 20, +25 if the mood matches, +15 if a sitting fits your time (−15 if it doesn't), +10 if you're already playing it, −10 if it's paused. It's a simple planning aid, not an AI.</div>
     </div>
+    <div class="sheet-foot"><span class="spacer"></span><button id="helpOk">Got it</button></div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="overlay" id="confirmModal">
+  <div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" style="max-width:420px">
+    <div class="sheet-head"><b id="confirmTitle">Are you sure?</b></div>
+    <div class="sheet-body"><p id="confirmText"></p></div>
+    <div class="sheet-foot"><span class="spacer"></span><button class="btn2" id="confirmNo">Cancel</button><button class="danger" id="confirmYes">Remove</button></div>
   </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const TOKENS = {
-  normal: "ON4FLs6gXshPwHFHjMp0ApFLOe8UMyPNJSe9hbAyuBY",
-  master: "ZrzX13ay2neuEltgVbgYNi8YfEYOVJFpJLepRCDAVY8"
+const API = "/api/v1";
+const PAGE = 24;
+const $ = (id) => document.getElementById(id);
+
+const DEFAULT_MOODS = ["cozy", "relaxing", "story", "focused", "competitive", "short", "intense", "creative"];
+const STATUS_LABEL = { backlog: "Backlog", playing: "Playing", paused: "Paused", completed: "Completed", dropped: "Dropped" };
+const PRIORITY_HINT = { 1: "someday, no rush", 2: "maybe later", 3: "fine either way", 4: "want to play soon", 5: "can't wait" };
+const TIMES = [["", "Any"], ["15", "15 min"], ["30", "30 min"], ["60", "1 hour"], ["120", "2 hours"], ["240", "4+ hours"]];
+const TABS = [["all", "All"], ["backlog", "Backlog"], ["playing", "Playing"], ["paused", "Paused"], ["completed", "Completed"], ["dropped", "Dropped"], ["wishlist", "Wishlist"]];
+
+const freshTri = () => ({ queue: [], exhausted: false, scanned: false, priority: 3, tags: [], typical: null, done: 0, skipped: new Set() });
+const state = {
+  sb: null, me: null, view: "today", stats: null, known: new Set(),
+  pick: { mood: "", minutes: "", items: [], idx: 0, candidates: 0, note: "", token: 0 },
+  lib: { tab: "all", offset: 0, total: 0, rows: [], token: 0 },
+  tri: freshTri(), sheet: null, sess: { offset: 0, total: 0 }
 };
 
-const API = "/api/v1";
-const $ = (id) => document.getElementById(id);
-const state = { role: "normal", games: [], all: [], sortKey: "playtime_minutes", sortDir: "desc", view: "grid", intro: true, heroId: null };
+/* ---------- utils ---------- */
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const numOrNull = (v) => { v = String(v).trim(); return v === "" ? null : Number(v); };
+const ukey = (n) => `bc:${state.me ? state.me.id : "anon"}:${n}`;
+function lsGet(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (_) { return d; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} }
 
-const isMaster = () => state.role === "master";
-const token = () => TOKENS[state.role];
-
-function escapeHtml(s) {
-  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-}
-
-function toast(message, kind = "success") {
-  const t = $("toast");
-  t.textContent = message;
-  t.className = "toast show " + kind;
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => { t.className = "toast " + kind; }, 3500);
-}
-
-async function api(path, options = {}) {
-  const res = await fetch(API + path, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + token(),
-      ...(options.headers || {})
-    }
-  });
-  if (res.status === 204) return null;
-  const text = await res.text();
-  let body = null;
-  try { body = text ? JSON.parse(text) : null; } catch (_) { body = text; }
-  if (!res.ok) {
-    const msg = (body && body.detail) ? (typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail)) : `HTTP ${res.status}`;
-    throw new Error(msg);
-  }
-  return body;
-}
-
-function formatPlaytime(min) {
+function fmtMin(min) {
   const m = Number(min) || 0;
   if (m < 60) return `${m} min`;
   const h = Math.floor(m / 60), r = m % 60;
   return r ? `${h} h ${r} min` : `${h} h`;
 }
+function fmtShort(min) {
+  const m = Number(min) || 0;
+  if (m < 60) return `${m} min`;
+  const h = m / 60;
+  return (h < 10 ? h.toFixed(1).replace(/\.0$/, "") : Math.round(h)) + " h";
+}
+const fmtDate = (iso) => iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";
+const hue = (s) => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 
-function formatHours(min) {
-  const h = (Number(min) || 0) / 60;
-  return `${h.toLocaleString(undefined, { maximumFractionDigits: 1 })} h`;
+function toast(msg, kind = "success") {
+  const t = $("toast");
+  t.textContent = msg;
+  t.className = "toast show " + kind;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.className = "toast " + kind; }, 4500);
 }
 
-/* Summary */
-function renderSummary() {
-  const all = state.all || [];
-  const owned = all.filter(g => g.library_status === "owned").length;
-  const total = all.reduce((n, g) => n + (Number(g.playtime_minutes) || 0), 0);
-  const avg = all.length ? total / all.length : 0;
-  
-  $("stTotal").textContent = all.length.toLocaleString();
-  $("stOwned").textContent = owned.toLocaleString();
-  $("stWish").textContent = (all.length - owned).toLocaleString();
-  $("stTime").textContent = formatHours(total);
-  $("stTop").textContent = formatHours(avg);
+function openOverlay(id) { $(id).classList.add("show"); document.body.classList.add("lock"); }
+function closeOverlay(id) {
+  $(id).classList.remove("show");
+  if (!document.querySelector(".overlay.show")) document.body.classList.remove("lock");
 }
 
-/* Table */
-function sortedGames() {
-  const k = state.sortKey, dir = state.sortDir === "asc" ? 1 : -1;
-  return [...state.games].sort((a, b) => {
-    const x = a[k], y = b[k];
-    if (typeof x === "number" && typeof y === "number") return (x - y) * dir;
-    return String(x ?? "").localeCompare(String(y ?? ""), undefined, { sensitivity: "base" }) * dir;
-  });
-}
-
-function renderList() {
-  const body = $("gamesBody");
-  const games = sortedGames();
-  const filtered = $("searchInput").value.trim() || $("statusFilter").value;
-
-  document.querySelectorAll("th[data-sort]").forEach(th => {
-    if (th.dataset.sort === state.sortKey) th.setAttribute("aria-sort", state.sortDir === "asc" ? "ascending" : "descending");
-    else th.removeAttribute("aria-sort");
-  });
-
-  $("count").textContent = state.games.length
-    ? `Showing ${state.games.length} of ${state.all.length} ${state.all.length === 1 ? "game" : "games"}`
-    : "";
-
-  if (games.length === 0) {
-    body.innerHTML = filtered
-      ? `<tr><td colspan="6" class="empty"><strong>No matches</strong>Try a different search or clear the status filter.</td></tr>`
-      : `<tr><td colspan="6" class="empty"><strong>Your library is empty</strong>Add a game by hand or import the mock Steam data.<br><button id="emptyAdd">Add game</button></td></tr>`;
-    return;
-  }
-
-  const maxPlay = Math.max(1, ...games.map(g => Number(g.playtime_minutes) || 0));
-  const lock = isMaster() ? "" : " locked";
-  const lockTitle = isMaster() ? "" : ' title="Requires the Master role"';
-
-  body.innerHTML = games.map(g => {
-    const id = Number(g.app_id);
-    const pct = Math.round(((Number(g.playtime_minutes) || 0) / maxPlay) * 100);
-    return `
-    <tr>
-      <td>
-        <div class="game">
-          <img class="thumb" loading="lazy" alt="" src="https://cdn.akamai.steamstatic.com/steam/apps/${id}/capsule_184x69.jpg" />
-          <div>
-            <div class="game-name">${escapeHtml(g.name)}</div>
-            <div class="game-id">App ID ${escapeHtml(g.app_id)}</div>
-          </div>
-        </div>
-      </td>
-      <td><span class="status status-${escapeHtml(g.library_status)}">${escapeHtml(g.library_status)}</span></td>
-      <td class="play">
-        <div class="play-text">${formatPlaytime(g.playtime_minutes)}</div>
-        <div class="play-bar"><i style="width:${pct}%"></i></div>
-      </td>
-      <td><span class="tag">${escapeHtml(g.source)}</span></td>
-      <td class="notes" title="${escapeHtml(g.notes || "")}">${escapeHtml(g.notes || "")}</td>
-      <td class="actions">
-        <button class="secondary" data-edit="${id}">Edit</button>
-        <button class="danger${lock}" data-del="${id}" data-name="${escapeHtml(g.name)}"${lockTitle}>Delete</button>
-      </td>
-    </tr>`;
-  }).join("");
-}
-
-function countLabel() {
-  return state.games.length
-    ? `Showing ${state.games.length} of ${state.all.length} ${state.all.length === 1 ? "game" : "games"}`
-    : "";
-}
-
-function emptyMarkup() {
-  const filtered = $("searchInput").value.trim() || $("statusFilter").value;
-  return filtered
-    ? `<div class="empty"><strong>No matches</strong>Try a different search or clear the status filter.</div>`
-    : `<div class="empty"><strong>Your library is empty</strong>Add a game by hand or import the mock Steam data.<br><button id="emptyAdd">Add game</button></div>`;
-}
-
-function renderHero() {
-  const top = state.all.reduce((a, g) => (!a || g.playtime_minutes > a.playtime_minutes) ? g : a, null);
-  const has = !!top && top.playtime_minutes > 0;
-  const img = $("heroImg");
-  $("hero").classList.toggle("plain", !has);
-  $("heroBody").hidden = !has;
-  if (!has) { img.removeAttribute("src"); img.classList.remove("loaded"); state.heroId = null; return; }
-  $("heroTitle").textContent = top.name;
-  $("heroMeta").innerHTML = `<span>${formatHours(top.playtime_minutes)} played</span><span class="status status-${escapeHtml(top.library_status)}">${escapeHtml(top.library_status)}</span>`;
-  $("heroEdit").dataset.edit = Number(top.app_id);
-  if (state.heroId !== top.app_id) {
-    state.heroId = top.app_id;
-    img.classList.remove("loaded");
-    img.src = `https://cdn.akamai.steamstatic.com/steam/apps/${Number(top.app_id)}/library_hero.jpg`;
-  }
-}
-
-function renderGrid() {
-  const el = $("grid");
-  const games = sortedGames();
-  $("count").textContent = countLabel();
-  if (games.length === 0) { el.className = "grid"; el.innerHTML = emptyMarkup(); return; }
-  const maxPlay = Math.max(1, ...games.map(g => Number(g.playtime_minutes) || 0));
-  const lock = isMaster() ? "" : " locked";
-  const lockTitle = isMaster() ? "" : ' title="Requires the Master role"';
-  el.className = "grid" + (state.intro ? " intro" : "");
-  el.innerHTML = games.map((g, i) => {
-    const id = Number(g.app_id);
-    const wish = g.library_status === "wishlist";
-    const pct = Math.round(((Number(g.playtime_minutes) || 0) / maxPlay) * 100);
-    return `
-    <article class="card${wish ? " wish" : ""}" style="--i:${Math.min(i, 24)}">
-      <button class="cover" data-edit="${id}" aria-label="Edit ${escapeHtml(g.name)}">
-        <img class="cover-img" loading="lazy" alt="" src="https://cdn.akamai.steamstatic.com/steam/apps/${id}/library_600x900.jpg" />
-        <span class="cover-fallback">${escapeHtml(g.name)}</span>
-        ${wish ? '<span class="chip">Wishlist</span>' : ""}
-        <span class="cover-bar"><i style="width:${pct}%"></i></span>
-      </button>
-      <button class="danger card-del${lock}" data-del="${id}" data-name="${escapeHtml(g.name)}"${lockTitle}>Delete</button>
-      <div class="card-cap">
-        <div class="card-name" title="${escapeHtml(g.name)}">${escapeHtml(g.name)}</div>
-        <div class="card-sub">${formatPlaytime(g.playtime_minutes)}</div>
-      </div>
-    </article>`;
-  }).join("");
-  if (state.intro) { state.intro = false; setTimeout(() => el.classList.remove("intro"), 1400); }
-}
-
-function renderRows() {
-  const grid = state.view === "grid";
-  $("grid").hidden = !grid;
-  document.querySelector(".table-wrap").hidden = grid;
-  document.querySelectorAll("#viewSeg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === state.view)));
-  renderHero();
-  if (grid) renderGrid(); else renderList();
-}
-
-function syncSort() {
-  const v = state.sortKey + ":" + state.sortDir;
-  const sel = $("sortSelect");
-  sel.value = [...sel.options].some(o => o.value === v) ? v : "";
-}
-
-async function loadGames() {
-  const params = new URLSearchParams();
-  const s = $("searchInput").value.trim();
-  const f = $("statusFilter").value;
-  if (s) params.set("search", s);
-  if (f) params.set("library_status", f);
-  const qs = params.toString() ? "?" + params.toString() : "";
-  
-  try {
-    // Fetch filtered list AND all games for the summary/stats
-    const [filteredRes, allRes] = await Promise.all([
-      api("/games" + qs), 
-      qs ? api("/games") : null
-    ]);
-
-    // Our new backend returns { total: X, data: [...] }
-    state.games = filteredRes && filteredRes.data ? filteredRes.data : [];
-    state.all = allRes && allRes.data ? allRes.data : (qs ? [] : state.games);
-
-    renderSummary();
-    renderRows();
-  } catch (err) {
-    toast(err.message, "error");
-    $("gamesBody").innerHTML = `<tr><td colspan="6" class="empty"><strong>Could not load games</strong>${escapeHtml(err.message)}<br><button id="retryBtn" class="secondary">Try again</button></td></tr>`;
-  }
-}
-
-/* Modals */
-function openModal(game = null) {
-  $("modal").classList.add("show");
-  $("modalTitle").textContent = game ? "Edit game" : "Add game";
-  $("formAppId").value = game ? game.app_id : "";
-  $("formSteamId").value = game ? game.app_id : "";
-  $("formName").value = game ? game.name : "";
-  $("formStatus").value = game ? game.library_status : "owned";
-  $("formPlaytime").value = game ? game.playtime_minutes : 0;
-  $("formNotes").value = game ? (game.notes || "") : "";
-  $("formSteamId").disabled = !!game;
-  $("formName").disabled = !!game;
-  (game ? $("formStatus") : $("formName")).focus();
-}
-
-function closeModal() { $("modal").classList.remove("show"); }
-
-function confirmDialog(text, label = "Delete game") {
+function confirmDialog(text, label = "Remove") {
   return new Promise(resolve => {
     $("confirmText").textContent = text;
     $("confirmYes").textContent = label;
-    $("confirmModal").classList.add("show");
+    openOverlay("confirmModal");
     $("confirmNo").focus();
-    const done = (v) => {
-      $("confirmModal").classList.remove("show");
-      $("confirmYes").onclick = $("confirmNo").onclick = null;
-      $("confirmModal")._cancel = null;
-      resolve(v);
-    };
+    const done = (v) => { closeOverlay("confirmModal"); $("confirmModal")._cancel = null; resolve(v); };
     $("confirmYes").onclick = () => done(true);
     $("confirmNo").onclick = () => done(false);
     $("confirmModal")._cancel = () => done(false);
   });
 }
 
-async function saveGame() {
-  const editing = $("formSteamId").disabled;
-  const appId = Number($("formSteamId").value);
-  const name = $("formName").value.trim();
-  const libraryStatus = $("formStatus").value;
-  const playtime = Number($("formPlaytime").value);
-  const notes = $("formNotes").value.trim() || null;
+function addKnown(tags) {
+  let changed = false;
+  (tags || []).forEach(t => { if (t && !state.known.has(t)) { state.known.add(t); changed = true; } });
+  if (changed) { lsSet(ukey("tags"), [...state.known]); fillMoodList(); }
+}
+const allMoods = (extra = []) => [...new Set([...DEFAULT_MOODS, ...state.known, ...extra])];
+function fillMoodList() { $("moodList").innerHTML = allMoods().map(m => `<option value="${esc(m)}"></option>`).join(""); }
 
-  if (!editing) {
-    if (!Number.isInteger(appId) || appId <= 0) return toast("Steam App ID must be a positive integer.", "error");
-    if (!name) return toast("Name is required.", "error");
-    try {
-      await api("/games", {
-        method: "POST",
-        body: JSON.stringify({
-          app_id: appId, name, library_status: libraryStatus,
-          playtime_minutes: playtime, source: "manual", notes
-        })
-      });
-      toast("Game added.", "success");
-    } catch (err) { return toast(err.message, "error"); }
-  } else {
-    try {
-      await api(`/games/${appId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ library_status: libraryStatus, playtime_minutes: playtime, notes })
-      });
-      toast("Game updated.", "success");
-    } catch (err) { return toast(err.message, "error"); }
-  }
-  closeModal();
-  loadGames();
+function cover(g, extra = "", variant = "portrait") {
+  const appId = g.platform === "steam" && g.steam_app_id ? Number(g.steam_app_id) : null;
+  const art = variant === "hero" ? "library_hero.jpg" : "library_600x900.jpg";
+  const img = appId ? `<img loading="lazy" alt="" src="https://cdn.akamai.steamstatic.com/steam/apps/${appId}/${art}" />` : "";
+  return `<div class="cv${variant === "hero" ? " cv-hero" : ""}" style="--h:${hue(g.name)}"><span class="ph">${esc(g.name)}</span>${img}${extra}</div>`;
 }
 
-async function deleteGame(appId, name) {
-  if (!isMaster()) return toast("Switch to the Master role to delete games.", "error");
-  const ok = await confirmDialog(`Delete ${name || "game " + appId}? This cannot be undone.`);
-  if (!ok) return;
+/* ---------- API ---------- */
+async function accessToken() {
+  const { data } = await state.sb.auth.getSession();
+  return data.session ? data.session.access_token : null;
+}
+async function api(path, options = {}) {
+  const token = await accessToken();
+  if (!token) { showLogin(); throw new Error("Please sign in."); }
+  const res = await fetch(API + path, {
+    ...options,
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, ...(options.headers || {}) }
+  });
+  if (res.status === 204) return null;
+  const text = await res.text();
+  let body = null;
+  try { body = text ? JSON.parse(text) : null; } catch (_) { body = text; }
+  if (res.status === 401) { await state.sb.auth.signOut(); showLogin(); throw new Error("Session expired. Please sign in again."); }
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    if (body && body.detail) {
+      msg = typeof body.detail === "string" ? body.detail
+        : Array.isArray(body.detail) ? body.detail.map(d => d.msg || JSON.stringify(d)).join("; ")
+        : JSON.stringify(body.detail);
+    }
+    throw new Error(msg);
+  }
+  return body;
+}
+
+/* ---------- Auth / views ---------- */
+function showLogin() {
+  $("appView").hidden = true;
+  $("loginView").hidden = false;
+  state.me = null;
+}
+
+async function enterApp() {
+  try { state.me = await api("/me"); }
+  catch (err) {
+    await state.sb.auth.signOut();
+    showLogin();
+    $("loginError").textContent = err.message;
+    return;
+  }
+  state.known = new Set(lsGet(ukey("tags"), []));
+  const displayName = state.me.display_name || state.me.email || "Player";
+  $("headerUser").textContent = displayName;
+  $("sideUser").textContent = state.me.email || displayName;
+  $("headerAvatar").textContent = displayName.trim().slice(0, 2).toUpperCase();
+  state.tri = freshTri();
+  state.stats = null;
+  fillMoodList();
+  $("loginView").hidden = true;
+  $("appView").hidden = false;
+  setView("today");
+}
+
+function setView(name) {
+  state.view = name;
+  for (const v of ["today", "library", "settings"]) $(v + "View").hidden = v !== name;
+  document.querySelectorAll("#nav [data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
+  window.scrollTo(0, 0);
+  if (name === "today") loadToday();
+  if (name === "library") { renderTabs(); loadLibrary(true); }
+  if (name === "settings") loadSettings();
+}
+
+async function refreshAll() {
+  await loadStats();
+  if (state.view === "today") loadPicks();
+  if (state.view === "library") loadLibrary(true);
+  scanTriage().then(renderStart).catch(() => {});
+}
+
+/* ---------- Stats ---------- */
+async function loadStats() {
+  try { state.stats = await api("/games/stats"); }
+  catch (err) { toast(err.message, "error"); return; }
+  renderStats(); renderTabs(); renderStart();
+  if (state.view === "settings") renderSyncInfo();
+}
+
+function renderStats() {
+  const s = state.stats; if (!s) return;
+  const tile = (n, label, tab) => `<button class="stat" data-gotab="${tab}"><b>${n.toLocaleString()}</b><span>${label}</span></button>`;
+  $("statsOut").innerHTML = `
+    <div class="stats">
+      ${tile(s.owned_games, "Owned", "all")}
+      ${tile(s.backlog_games, "In backlog", "backlog")}
+      ${tile(s.playing_games, "Playing", "playing")}
+      ${tile(s.completed_games, "Completed", "completed")}
+    </div>
+    <details class="more">
+      <summary>More numbers</summary>
+      <div class="kv">
+        <div><span>Wishlist</span><b>${s.wishlist_games}</b></div>
+        <div><span>Paused</span><b>${s.paused_games}</b></div>
+        <div><span>Dropped</span><b>${s.dropped_games}</b></div>
+        <div><span>Steam playtime</span><b>${fmtMin(s.total_steam_playtime_minutes)}</b></div>
+        <div><span>Logged sessions</span><b>${fmtMin(s.manual_session_minutes)} (${s.session_count})</b></div>
+        <div><span>Imported manual time</span><b>${fmtMin(s.legacy_manual_playtime_minutes)}</b></div>
+        <div><span>Last Steam sync</span><b>${s.last_steam_sync_at ? esc(fmtDate(s.last_steam_sync_at)) : "Never"}</b></div>
+      </div>
+    </details>`;
+}
+
+/* ---------- Today ---------- */
+function loadToday() {
+  $("greet").textContent = state.me ? `Hey, ${state.me.display_name}` : "Hey there";
+  renderPickerChips();
+  loadStats();
+  loadPicks();
+  scanTriage().then(renderStart).catch(() => {});
+}
+
+function renderPickerChips() {
+  $("timeChips").innerHTML = TIMES.map(([v, l]) => `<button class="chip" data-time="${v}" aria-pressed="${state.pick.minutes === v}">${l}</button>`).join("");
+  $("moodChips").innerHTML = [["", "Any"], ...allMoods().map(m => [m, m])]
+    .map(([v, l]) => `<button class="chip" data-pmood="${esc(v)}" aria-pressed="${state.pick.mood === v}">${esc(l)}</button>`).join("");
+}
+
+async function loadPicks() {
+  const P = state.pick;
+  const p = new URLSearchParams({ limit: "6" });
+  if (P.mood) p.set("mood", P.mood);
+  if (P.minutes) p.set("available_minutes", P.minutes);
+  const token = ++P.token;
   try {
-    await api(`/games/${appId}`, { method: "DELETE" });
-    toast("Game deleted.", "success");
-    loadGames();
+    const r = await api("/recommendations/next?" + p);
+    if (token !== P.token) return;
+    P.items = r.data; P.idx = 0; P.candidates = r.total_candidates; P.note = r.note;
+    renderPick();
   } catch (err) { toast(err.message, "error"); }
 }
 
-async function editGame(appId) {
-  try { openModal(await api(`/games/${appId}`)); }
-  catch (err) { toast(err.message, "error"); }
+function renderPick() {
+  const P = state.pick, out = $("pickOut");
+  if (!P.candidates) {
+    out.innerHTML = `<div class="card empty"><b>Nothing to pick from yet</b>
+      <p>Picks come from games you own that are in Backlog, Playing or Paused. Sync Steam in Settings or add a game by hand.</p>
+      <div class="row-btns"><button data-act="manual">Add a game</button><button class="btn2" data-act="settings">Settings</button></div></div>`;
+    return;
+  }
+  const it = P.items[P.idx], g = it.game;
+  const others = P.items.filter((_, i) => i !== P.idx).slice(0, 3);
+  const playing = g.play_status === "playing";
+  const hints = [];
+  if (P.mood && !P.items.some(i => i.reasons.some(r => r.startsWith("Matches")))) hints.push(`None of your games are tagged "${esc(P.mood)}" yet. Use Quick setup or edit a game to add moods.`);
+  if (P.minutes && P.items.every(i => i.reasons.some(r => r.startsWith("Typical session length unknown")))) hints.push("Add a typical sitting length to your games so the time filter can work.");
+
+  out.innerHTML = `
+    <div class="card pick">
+      <div class="pick-cover">${cover(g, "", "hero")}</div>
+      <div class="pick-body">
+        <div class="kicker">${P.idx === 0 ? "Top pick" : "Next best"}${P.mood || P.minutes ? " for right now" : ""}</div>
+        <h2>${esc(g.name)}</h2>
+        <div class="meta">${esc(STATUS_LABEL[g.play_status])} · Priority ${g.priority}/5 · ${Math.round(g.progress_percent)}% done${g.typical_session_minutes ? ` · about ${g.typical_session_minutes} min a sitting` : ""}</div>
+        <div class="hint" style="margin-top:10px">Why this one?</div>
+        <div class="why">${it.reasons.map(r => `<span class="${r.includes("(-") ? "neg" : ""}">${esc(r)}</span>`).join("")}</div>
+        <div class="pick-actions">
+          ${playing
+            ? `<button data-act="log" data-id="${esc(g.id)}">Log a session</button>`
+            : `<button data-act="start" data-id="${esc(g.id)}">Start playing</button><button class="btn2" data-act="log" data-id="${esc(g.id)}">Log a session</button>`}
+          <button class="ghost" data-act="skip">Not now</button>
+          <button class="ghost" data-open="${esc(g.id)}">Details</button>
+        </div>
+      </div>
+    </div>
+    ${hints.map(h => `<div class="tip">${h}</div>`).join("")}
+    ${others.length ? `<span class="lab" style="margin:18px 0 8px">Also good</span><div class="stack">${others.map(o => `
+      <button class="rowcard" data-open="${esc(o.game.id)}"><div class="mini">${cover(o.game)}</div>
+        <div><b>${esc(o.game.name)}</b><span class="meta">Score ${o.score} · Priority ${o.priority}/5${o.typical_session_minutes ? ` · about ${o.typical_session_minutes} min` : ""}</span></div></button>`).join("")}</div>` : ""}
+    <div class="note">${esc(P.note)}</div>`;
 }
 
-async function mockSync() {
-  if (!isMaster()) return toast("Switch to the Master role to import games.", "error");
-  const btn = $("mockSyncBtn");
-  btn.disabled = true;
-  btn.textContent = "Importing";
-  const mockGames = {
-    games: [
-      { appid: 570, name: "Dota 2", playtime_forever: 4500 },
-      { appid: 730, name: "Counter-Strike 2", playtime_forever: 1200 },
-      { appid: 1091500, name: "Cyberpunk 2077", playtime_forever: 3400 },
-      { appid: 1174180, name: "Red Dead Redemption 2", playtime_forever: 8500 },
-      { appid: 292030, name: "The Witcher 3: Wild Hunt", playtime_forever: 15000 }
-    ]
-  };
+async function startPlaying(id) {
   try {
-    const data = await api("/steam/mock-sync", { method: "POST", body: JSON.stringify(mockGames) });
-    toast(`Imported ${data.records_upserted} games.`, "success");
-    loadGames();
-  } catch (err) {
-    toast(err.message || "Import failed.", "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Import mock data";
+    await api(`/games/${id}`, { method: "PATCH", body: JSON.stringify({ play_status: "playing" }) });
+    toast("Marked as playing. Have fun!");
+    loadStats(); loadPicks();
+  } catch (err) { toast(err.message, "error"); }
+}
+
+/* Getting started + quick-setup banner */
+function renderStart() {
+  const s = state.stats, me = state.me, T = state.tri;
+  if (!s || !me || !T.scanned) { $("startCard").hidden = true; $("triBanner").hidden = true; return; }
+  const n = T.queue.length, nTxt = n + (T.exhausted ? "" : "+");
+  const steps = [
+    { done: !!me.steam_id, t: "Link your Steam account", d: "Add your SteamID64 so Backlog Compass can read your library.",
+      a: `<button class="sm" data-act="settings">Add Steam ID</button>` },
+    { done: !!s.last_steam_sync_at, t: "Import your Steam library", d: "Pulls in your games and playtime. It never overwrites your notes or deletes anything.",
+      a: me.steam_id ? `<button class="sm" data-act="sync">Sync now</button>` : "" },
+    { done: s.total_games > 0 && n === 0, t: "Tell it about your games",
+      d: `Set how much you want to play each one, its mood and sitting length. Without this, picks are generic.${n ? ` ${nTxt} waiting.` : ""}`,
+      a: `<button class="sm" data-act="triage"${s.total_games ? "" : " disabled"}>Quick setup</button>` },
+  ];
+  const hidden = lsGet(ukey("hideStart"), false);
+  const show = !hidden && !steps.every(x => x.done);
+  $("startCard").hidden = !show;
+  if (show) {
+    $("startCard").innerHTML = `
+      <h2>Get started in 3 steps</h2>
+      <p class="meta">Then use "What should I play?" below.</p>
+      <div class="steps">${steps.map((x, i) => `
+        <div class="step${x.done ? " done" : ""}"><div class="n">${x.done ? "✓" : i + 1}</div>
+          <div class="t"><b>${x.t}</b><small>${x.d}</small></div>${x.done ? "" : x.a}</div>`).join("")}</div>
+      <div class="start-foot">
+        <button class="ghost sm" data-act="manual">No Steam? Add a game by hand</button>
+        <button class="ghost sm" data-act="help">How does this work?</button>
+        <button class="ghost sm" data-act="hide">Hide</button>
+      </div>`;
+  }
+  const banner = !show && n > 0;
+  $("triBanner").hidden = !banner;
+  if (banner) {
+    $("triBanner").innerHTML = `<div><b>${nTxt} games could use a quick setup</b>
+      <div class="meta">Set priority, mood and sitting length (about 10 seconds each) so picks get smarter.</div></div>
+      <button data-act="triage">Quick setup</button>`;
   }
 }
 
-/* Events */
-$("roleSeg").addEventListener("click", (e) => {
-  const b = e.target.closest("[data-role]");
-  if (!b || b.dataset.role === state.role) return;
-  state.role = b.dataset.role;
-  document.querySelectorAll("#roleSeg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
-  loadGames();
+/* ---------- Quick setup (triage) ---------- */
+async function scanTriage() {
+  const done = new Set(lsGet(ukey("done"), []));
+  const out = [];
+  let offset = 0, exhausted = false;
+  for (let page = 0; page < 12; page++) {
+    const p = new URLSearchParams({ acquisition_status: "owned", play_status: "backlog", sort_by: "steam_playtime_minutes", order: "desc", limit: "100", offset: String(offset) });
+    const r = await api("/games?" + p);
+    r.data.forEach(g => {
+      addKnown(g.mood_tags);
+      if (!g.mood_tags.length && g.typical_session_minutes == null && !done.has(g.id) && !state.tri.skipped.has(g.id)) out.push(g);
+    });
+    offset += r.data.length;
+    if (!r.data.length || offset >= r.total) { exhausted = true; break; }
+    if (out.length >= 60) break;
+  }
+  state.tri.queue = out;
+  state.tri.exhausted = exhausted;
+  state.tri.scanned = true;
+}
+
+function resetTriForm() { Object.assign(state.tri, { priority: 3, tags: [], typical: null }); }
+
+async function openTriage() {
+  openOverlay("triageModal");
+  $("triBody").innerHTML = `<div class="empty">Loading…</div>`;
+  $("triFoot").innerHTML = "";
+  try { if (!state.tri.scanned || !state.tri.queue.length) await scanTriage(); }
+  catch (err) { toast(err.message, "error"); closeOverlay("triageModal"); return; }
+  state.tri.done = 0;
+  resetTriForm();
+  renderTriage();
+}
+
+function closeTriage() {
+  closeOverlay("triageModal");
+  if (state.tri.done > 0) { state.tri.done = 0; refreshAll(); }
+}
+
+function renderTriage() {
+  const T = state.tri, g = T.queue[0], body = $("triBody");
+  const top = body.scrollTop;
+  $("triCount").textContent = g ? `${T.queue.length}${T.exhausted ? "" : "+"} left` : "";
+  if (!g) {
+    body.innerHTML = `<div class="empty"><b>You're all caught up</b><p>Anything you set up now shows in your picks right away.</p></div>`;
+    $("triFoot").innerHTML = `<span class="spacer"></span><button data-ta="close">Done</button>`;
+    return;
+  }
+  const played = g.steam_playtime_minutes > 0 ? `You've played ${fmtMin(g.steam_playtime_minutes)} on Steam` : "Not played yet";
+  body.innerHTML = `
+    <div class="tri-top"><div class="tc">${cover(g)}</div><div><div class="tri-name">${esc(g.name)}</div><div class="meta">${esc(played)}</div></div></div>
+    <div><span class="lab">How much do you want to play it?</span>
+      <div class="seg5">${[1, 2, 3, 4, 5].map(n => `<button class="chip" data-tp="${n}" aria-pressed="${T.priority === n}">${n}</button>`).join("")}</div>
+      <div class="hint" style="margin-top:6px">${T.priority} = ${PRIORITY_HINT[T.priority]}</div></div>
+    <div><span class="lab">What mood suits it? <span class="hint">optional</span></span>
+      <div class="chips">${allMoods(T.tags).map(m => `<button class="chip" data-tm="${esc(m)}" aria-pressed="${T.tags.includes(m)}">${esc(m)}</button>`).join("")}</div></div>
+    <div><span class="lab">Typical sitting <span class="hint">optional</span></span>
+      <div class="chips">${[15, 30, 60, 90, 120, 180].map(n => `<button class="chip" data-tt="${n}" aria-pressed="${T.typical === n}">${n} min</button>`).join("")}</div></div>`;
+  body.scrollTop = top;
+  $("triFoot").innerHTML = `
+    <button class="ghost sm" data-ta="finished">I finished it</button>
+    <button class="ghost sm" data-ta="dropped">Not for me</button>
+    <span class="spacer"></span>
+    <button class="btn2" data-ta="skip">Skip</button>
+    <button data-ta="save">Save &amp; next</button>`;
+}
+
+async function triageAct(kind) {
+  const T = state.tri, g = T.queue[0];
+  if (kind === "close") return closeTriage();
+  if (!g) return;
+  if (kind === "skip") { T.skipped.add(g.id); return advanceTriage(); }
+  let changes;
+  if (kind === "save") {
+    changes = { priority: T.priority, mood_tags: T.tags };
+    if (T.typical) changes.typical_session_minutes = T.typical;
+  } else if (kind === "finished") changes = { play_status: "completed", progress_percent: 100 };
+  else if (kind === "dropped") changes = { play_status: "dropped" };
+  else return;
+  try {
+    await api(`/games/${g.id}`, { method: "PATCH", body: JSON.stringify(changes) });
+    const done = lsGet(ukey("done"), []); done.push(g.id); lsSet(ukey("done"), done);
+    addKnown(T.tags);
+    T.done++;
+    advanceTriage();
+  } catch (err) { toast(err.message, "error"); }
+}
+
+async function advanceTriage() {
+  const T = state.tri;
+  T.queue.shift();
+  resetTriForm();
+  if (!T.queue.length && !T.exhausted) {
+    try { await scanTriage(); } catch (err) { toast(err.message, "error"); }
+  }
+  renderTriage();
+}
+
+/* ---------- Library ---------- */
+const tabCount = (k) => {
+  const s = state.stats; if (!s) return null;
+  return { all: s.total_games, backlog: s.backlog_games, playing: s.playing_games, paused: s.paused_games, completed: s.completed_games, dropped: s.dropped_games, wishlist: s.wishlist_games }[k];
+};
+function renderTabs() {
+  const counts = TABS.map(([k, l]) => {
+    const c = tabCount(k);
+    return { k, l, c };
+  });
+  $("tabs").innerHTML = counts.map(({ k, l, c }) =>
+    `<button class="chip" data-tab="${k}" aria-pressed="${state.lib.tab === k}">${l}${c != null ? `<span class="cnt">${c}</span>` : ""}</button>`
+  ).join("");
+  $("sideTabs").innerHTML = counts.map(({ k, l, c }) => {
+    const symbols = { all: "▦", backlog: "◷", playing: "▶", paused: "Ⅱ", completed: "✓", dropped: "×", wishlist: "☆" };
+    return `<button class="side-link" data-tab="${k}" aria-pressed="${state.lib.tab === k}"><span class="side-symbol">${symbols[k]}</span><span>${l === "All" ? "All games" : l}</span>${c != null ? `<span class="side-count">${Number(c).toLocaleString()}</span>` : ""}</button>`;
+  }).join("");
+}
+
+async function loadLibrary(reset = true) {
+  const L = state.lib;
+  if (reset) L.offset = 0;
+  const token = ++L.token;
+  const p = new URLSearchParams();
+  const q = $("fSearch").value.trim(); if (q) p.set("search", q);
+  if (L.tab === "wishlist") p.set("acquisition_status", "wishlist");
+  else if (L.tab !== "all") { p.set("play_status", L.tab); p.set("acquisition_status", "owned"); }
+  if ($("fPlatform").value) p.set("platform", $("fPlatform").value);
+  const mood = $("fMood").value.trim().toLowerCase(); if (mood) p.set("mood", mood);
+  const [sb, ord] = $("fSort").value.split(":");
+  p.set("sort_by", sb); p.set("order", ord); p.set("limit", PAGE); p.set("offset", L.offset);
+  try {
+    const r = await api("/games?" + p);
+    if (token !== L.token) return;
+    L.total = r.total;
+    L.rows = reset ? r.data : L.rows.concat(r.data);
+    L.offset = L.rows.length;
+    r.data.forEach(g => addKnown(g.mood_tags));
+    renderLibrary();
+  } catch (err) {
+    if (token !== L.token) return;
+    toast(err.message, "error");
+    $("grid").innerHTML = `<div class="card empty" style="grid-column:1/-1"><b>Could not load games</b><p>${esc(err.message)}</p></div>`;
+  }
+}
+
+function renderLibrary() {
+  const L = state.lib;
+  $("libCount").textContent = `${L.total.toLocaleString()} ${L.total === 1 ? "game" : "games"}`;
+  $("loadMore").hidden = L.rows.length >= L.total;
+  if (!L.rows.length) {
+    const filtered = $("fSearch").value.trim() || L.tab !== "all" || $("fPlatform").value || $("fMood").value.trim();
+    $("grid").innerHTML = filtered
+      ? `<div class="card empty" style="grid-column:1/-1"><b>No matches</b><p>Try another tab, or clear the search and filters.</p></div>`
+      : `<div class="card empty" style="grid-column:1/-1"><b>Your library is empty</b><p>Sync your Steam games from Settings, or add a game by hand.</p>
+          <div class="row-btns"><button data-act="settings">Go to Settings</button><button class="btn2" data-act="manual">Add a game</button></div></div>`;
+    return;
+  }
+  $("grid").innerHTML = L.rows.map(g => {
+    const wish = g.acquisition_status === "wishlist";
+    const badge = wish ? "wishlist" : (g.play_status !== "backlog" ? g.play_status : "");
+    const extra = `${badge ? `<span class="badge ${badge}">${badge}</span>` : ""}<span class="pips">★ ${g.priority}</span>` +
+      (g.progress_percent > 0 ? `<span class="pbar"><i style="width:${Math.min(100, g.progress_percent)}%"></i></span>` : "");
+    const sub = g.platform === "steam" ? `${fmtShort(g.steam_playtime_minutes)} played` : "Other platform";
+    return `<button class="gcard${wish ? " dim" : ""}" data-open="${esc(g.id)}" aria-label="Open ${esc(g.name)}">
+      ${cover(g, extra)}<div class="gname">${esc(g.name)}</div><div class="gsub">${esc(sub)}</div></button>`;
+  }).join("");
+}
+
+/* ---------- Game sheet ---------- */
+async function openById(id, focusSessions = false) {
+  try {
+    const g = await api(`/games/${id}`);
+    openSheet(g);
+    if (focusSessions) setTimeout(() => { $("sessBox").scrollIntoView({ block: "center" }); $("sDuration").focus(); }, 60);
+  } catch (err) { toast(err.message, "error"); }
+}
+
+function syncPlatform() { $("gSteamWrap").hidden = $("gPlatform").value !== "steam"; }
+
+function openSheet(game = null) {
+  const add = !game;
+  state.sheet = {
+    add, id: game ? game.id : null, game,
+    play: game ? game.play_status : "backlog", acq: game ? game.acquisition_status : "owned",
+    prio: game ? game.priority : 3, tags: game ? [...(game.mood_tags || [])] : []
+  };
+  $("gTitle").textContent = add ? "Add a game" : "Game details";
+  $("addOnly").hidden = !add; $("editHead").hidden = add; $("sessBox").hidden = add; $("gDelete").hidden = add;
+  if (add) {
+    ["gName", "gSteamId", "gUrl"].forEach(i => { $(i).value = ""; });
+    $("gPlatform").value = "other"; syncPlatform();
+  } else {
+    const bits = [game.platform === "steam" ? "Steam" : "Other platform"];
+    if (game.platform === "steam") bits.push(`${fmtMin(game.steam_playtime_minutes)} played`);
+    if (game.legacy_manual_playtime_minutes) bits.push(`${fmtMin(game.legacy_manual_playtime_minutes)} imported manual time`);
+    $("editHead").innerHTML = `<div class="gc">${cover(game)}</div><div><div class="gn">${esc(game.name)}</div><div class="meta">${esc(bits.join(" · "))}</div></div>`;
+  }
+  $("gTypical").value = game && game.typical_session_minutes != null ? game.typical_session_minutes : "";
+  $("gRemaining").value = game && game.estimated_remaining_minutes != null ? +(game.estimated_remaining_minutes / 60).toFixed(1) : "";
+  $("gProgress").value = game ? Math.round(game.progress_percent) : 0;
+  $("gProgLabel").textContent = $("gProgress").value + "%";
+  $("gNotes").value = game ? (game.notes || "") : "";
+  $("gNewTag").value = "";
+  $("sDurChips").innerHTML = [15, 30, 45, 60, 90, 120].map(n => `<button class="chip" data-dur="${n}">${n} min</button>`).join("");
+  renderSheetChips();
+  openOverlay("gameModal");
+  document.querySelector("#gameModal .sheet-body").scrollTop = 0;
+  if (add) $("gName").focus();
+  else {
+    state.sess = { offset: 0, total: 0 };
+    $("sDuration").value = ""; $("sNotes").value = ""; $("sessList").innerHTML = "";
+    loadSessions(true);
+  }
+}
+function closeSheet() { closeOverlay("gameModal"); state.sheet = null; }
+
+function renderSheetChips() {
+  const s = state.sheet; if (!s) return;
+  $("gPlayChips").innerHTML = Object.entries(STATUS_LABEL).map(([k, l]) => `<button class="chip" data-play="${k}" aria-pressed="${s.play === k}">${l}</button>`).join("");
+  $("gAcqChips").innerHTML = [["owned", "I own it"], ["wishlist", "Wishlist"]].map(([k, l]) => `<button class="chip" data-acq="${k}" aria-pressed="${s.acq === k}">${l}</button>`).join("");
+  $("gPrioChips").innerHTML = [1, 2, 3, 4, 5].map(n => `<button class="chip" data-prio="${n}" aria-pressed="${s.prio === n}">${n}</button>`).join("");
+  $("gPrioHint").textContent = `${s.prio} = ${PRIORITY_HINT[s.prio]}`;
+  $("gMoodChips").innerHTML = allMoods(s.tags).map(m => `<button class="chip" data-mood="${esc(m)}" aria-pressed="${s.tags.includes(m)}">${esc(m)}</button>`).join("");
+  const typ = $("gTypical").value;
+  $("gTypChips").innerHTML = [15, 30, 45, 60, 90, 120, 180].map(n => `<button class="chip" data-typ="${n}" aria-pressed="${String(n) === typ}">${n} min</button>`).join("");
+}
+
+function parseAppId(v) {
+  v = String(v).trim();
+  const m = v.match(/\/app\/(\d+)/) || v.match(/^(\d+)$/);
+  return m ? Number(m[1]) : null;
+}
+
+async function saveSheet() {
+  const s = state.sheet; if (!s) return;
+  const typ = numOrNull($("gTypical").value);
+  if (typ !== null && (!Number.isInteger(typ) || typ < 5 || typ > 1440)) return toast("Typical sitting must be 5–1440 minutes.", "error");
+  const hrs = numOrNull($("gRemaining").value);
+  if (hrs !== null && (Number.isNaN(hrs) || hrs < 0)) return toast("Hours left can't be negative.", "error");
+  const common = {
+    acquisition_status: s.acq, play_status: s.play, priority: s.prio, mood_tags: s.tags,
+    typical_session_minutes: typ,
+    estimated_remaining_minutes: hrs === null ? null : Math.round(hrs * 60),
+    progress_percent: Number($("gProgress").value) || 0,
+    notes: $("gNotes").value.trim() || null
+  };
+  $("gSave").disabled = true;
+  try {
+    if (s.add) {
+      const name = $("gName").value.trim();
+      if (!name) throw new Error("Give the game a name.");
+      const platform = $("gPlatform").value;
+      let appId = null;
+      if (platform === "steam") {
+        appId = parseAppId($("gSteamId").value);
+        if (!appId) throw new Error("Paste the Steam store link (…/app/12345) or the numeric App ID.");
+      }
+      let url = $("gUrl").value.trim();
+      if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
+      await api("/games", { method: "POST", body: JSON.stringify({ ...common, platform, name, steam_app_id: appId, store_url: url || null }) });
+      toast(`Added ${name}.`);
+    } else {
+      await api(`/games/${s.id}`, { method: "PATCH", body: JSON.stringify(common) });
+      toast("Saved.");
+    }
+    addKnown(s.tags);
+    closeSheet();
+    refreshAll();
+  } catch (err) { toast(err.message, "error"); }
+  finally { $("gSave").disabled = false; }
+}
+
+async function deleteFromSheet() {
+  const s = state.sheet; if (!s || s.add) return;
+  const name = s.game.name;
+  if (!await confirmDialog(`Remove "${name}" from your library? Its logged sessions are deleted too. Steam games come back if you sync again.`)) return;
+  try {
+    await api(`/games/${s.id}`, { method: "DELETE" });
+    toast("Removed.");
+    closeSheet();
+    refreshAll();
+  } catch (err) { toast(err.message, "error"); }
+}
+
+/* Sessions */
+async function loadSessions(reset) {
+  const s = state.sheet; if (!s || s.add) return;
+  if (reset) { state.sess.offset = 0; $("sessList").innerHTML = ""; }
+  try {
+    const r = await api(`/games/${s.id}/sessions?limit=10&offset=${state.sess.offset}`);
+    if (!state.sheet || state.sheet.id !== s.id) return;
+    state.sess.total = r.total;
+    if (reset && !r.data.length) $("sessList").innerHTML = `<div class="hint">No sessions yet. Log one after you play.</div>`;
+    else $("sessList").insertAdjacentHTML("beforeend", r.data.map(x => `
+      <div class="sess"><div><b>${fmtMin(x.duration_minutes)}</b>${x.mood ? ` · ${esc(x.mood)}` : ""}
+        <div class="hint">${esc(fmtDate(x.played_at))}${x.notes ? ` · ${esc(x.notes)}` : ""}</div></div>
+        <button class="danger sm" data-delsess="${esc(x.id)}">Delete</button></div>`).join(""));
+    state.sess.offset += r.data.length;
+    $("sMore").hidden = state.sess.offset >= state.sess.total;
+  } catch (err) { toast(err.message, "error"); }
+}
+
+async function addSession() {
+  const s = state.sheet; if (!s || s.add) return;
+  const dur = Number($("sDuration").value);
+  if (!Number.isInteger(dur) || dur < 1 || dur > 1440) return toast("Enter the minutes you played (1–1440).", "error");
+  $("sAdd").disabled = true;
+  try {
+    await api(`/games/${s.id}/sessions`, { method: "POST", body: JSON.stringify({ duration_minutes: dur, notes: $("sNotes").value.trim() || null }) });
+    toast("Session logged.");
+    $("sDuration").value = ""; $("sNotes").value = "";
+    if (s.game.play_status === "backlog") {
+      try {
+        await api(`/games/${s.id}`, { method: "PATCH", body: JSON.stringify({ play_status: "playing" }) });
+        s.game.play_status = "playing"; s.play = "playing"; renderSheetChips();
+        toast("Session logged. Moved to Playing.");
+      } catch (_) {}
+    }
+    loadSessions(true);
+    loadStats();
+  } catch (err) { toast(err.message, "error"); }
+  finally { $("sAdd").disabled = false; }
+}
+
+/* ---------- Settings ---------- */
+function renderSyncInfo() {
+  const s = state.stats;
+  $("syncInfo").textContent = s && s.last_steam_sync_at ? `Last sync: ${fmtDate(s.last_steam_sync_at)}` : "Steam has not been synced yet.";
+}
+function loadSettings() {
+  $("sName").value = state.me.display_name || "";
+  $("sSteam").value = state.me.steam_id || "";
+  $("accountLine").textContent = state.me.email ? `Signed in as ${state.me.email}` : "";
+  renderSyncInfo();
+  if (!state.stats) loadStats();
+}
+
+async function saveProfile() {
+  const name = $("sName").value.trim();
+  if (!name) return toast("Display name can't be empty.", "error");
+  const raw = $("sSteam").value.trim();
+  let steam = null;
+  if (raw) {
+    const m = raw.match(/(?<!\d)\d{17}(?!\d)/);
+    if (!m) return toast("Couldn't find a 17-digit SteamID64 in that. See the help under the box.", "error");
+    steam = m[0];
+  }
+  try {
+    state.me = await api("/me", { method: "PATCH", body: JSON.stringify({ display_name: name, steam_id: steam }) });
+    $("sSteam").value = state.me.steam_id || "";
+    $("greet").textContent = `Hey, ${state.me.display_name}`;
+    $("headerUser").textContent = state.me.display_name || state.me.email || "Player";
+    $("sideUser").textContent = state.me.email || state.me.display_name || "Signed in";
+    $("headerAvatar").textContent = (state.me.display_name || "Player").trim().slice(0, 2).toUpperCase();
+    toast("Profile saved.");
+    renderStart();
+  } catch (err) { toast(err.message, "error"); }
+}
+
+async function syncSteam() {
+  const btns = [...document.querySelectorAll("#syncBtn,[data-act=sync]")];
+  btns.forEach(b => { b.disabled = true; });
+  const label = $("syncBtn").textContent;
+  $("syncBtn").textContent = "Syncing…";
+  try {
+    const r = await api("/steam/sync", { method: "POST" });
+    const msg = r.warning ? r.warning : `Synced ${r.records_processed} games from Steam.`;
+    $("syncResult").textContent = msg;
+    toast(msg, r.warning ? "warn" : "success");
+    await refreshAll();
+  } catch (err) { $("syncResult").textContent = err.message; toast(err.message, "error"); }
+  finally {
+    $("syncBtn").textContent = label;
+    document.querySelectorAll("#syncBtn,[data-act=sync]").forEach(b => { b.disabled = false; });
+  }
+}
+
+async function previewSteam() {
+  try {
+    const r = await api("/steam/owned-games");
+    $("syncResult").textContent = r.warning || `Steam reports ${r.total_games} owned games. Nothing was saved.`;
+  } catch (err) { $("syncResult").textContent = err.message; toast(err.message, "error"); }
+}
+
+/* ---------- Events ---------- */
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("loginError").textContent = "";
+  $("loginBtn").disabled = true;
+  const { error } = await state.sb.auth.signInWithPassword({ email: $("loginEmail").value.trim(), password: $("loginPassword").value });
+  $("loginBtn").disabled = false;
+  if (error) { $("loginError").textContent = "Sign-in failed: " + error.message; return; }
+  $("loginPassword").value = "";
+  enterApp();
 });
-$("addBtn").addEventListener("click", () => openModal());
-$("cancelBtn").addEventListener("click", closeModal);
-$("saveBtn").addEventListener("click", saveGame);
-$("refreshBtn").addEventListener("click", loadGames);
-$("mockSyncBtn").addEventListener("click", mockSync);
-$("statusFilter").addEventListener("change", loadGames);
-$("searchInput").addEventListener("input", () => {
-  clearTimeout(window._searchTimer);
-  window._searchTimer = setTimeout(loadGames, 250);
+$("logoutBtn").addEventListener("click", async () => { await state.sb.auth.signOut(); showLogin(); });
+$("nav").addEventListener("click", (e) => { const b = e.target.closest("[data-view]"); if (b) setView(b.dataset.view); });
+$("helpBtn").addEventListener("click", () => openOverlay("helpModal"));
+for (const id of ["helpClose", "helpOk"]) $(id).addEventListener("click", () => closeOverlay("helpModal"));
+
+/* Today pickers */
+$("timeChips").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-time]"); if (!b) return;
+  state.pick.minutes = b.dataset.time; renderPickerChips(); loadPicks();
 });
-$("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal(); });
-$("modal").addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && e.target.tagName === "INPUT") saveGame();
-});
-$("confirmModal").addEventListener("click", (e) => {
-  if (e.target === $("confirmModal") && $("confirmModal")._cancel) $("confirmModal")._cancel();
-});
-document.addEventListener("keydown", (e) => {
-  if (e.key !== "Escape") return;
-  if ($("confirmModal")._cancel) $("confirmModal")._cancel();
-  else closeModal();
-});
-document.querySelector("thead").addEventListener("click", (e) => {
-  const th = e.target.closest("th[data-sort]");
-  if (!th) return;
-  const key = th.dataset.sort;
-  if (state.sortKey === key) state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
-  else { state.sortKey = key; state.sortDir = key === "playtime_minutes" ? "desc" : "asc"; }
-  syncSort();
-  renderRows();
-});
-document.addEventListener("click", (e) => {
-  const edit = e.target.closest("[data-edit]");
-  if (edit) return editGame(edit.dataset.edit);
-  const del = e.target.closest("[data-del]");
-  if (del) return deleteGame(del.dataset.del, del.dataset.name);
-  if (e.target.id === "emptyAdd") return openModal();
-  if (e.target.id === "retryBtn") return loadGames();
-});
-/* Hide thumbnails that fail to load (error events do not bubble, so capture) */
-document.addEventListener("error", (e) => {
-  const t = e.target;
-  if (!t.classList) return;
-  if (t.classList.contains("thumb") || t.id === "heroImg") t.removeAttribute("src");
-  if (t.classList.contains("cover-img")) { t.closest(".card").classList.add("noimg"); t.remove(); }
-}, true);
-document.addEventListener("load", (e) => {
-  if (e.target.id === "heroImg") e.target.classList.add("loaded");
-}, true);
-$("sortSelect").addEventListener("change", (e) => {
-  if (!e.target.value) return;
-  [state.sortKey, state.sortDir] = e.target.value.split(":");
-  renderRows();
-});
-$("viewSeg").addEventListener("click", (e) => {
-  const b = e.target.closest("[data-view]");
-  if (!b || b.dataset.view === state.view) return;
-  state.view = b.dataset.view;
-  renderRows();
+$("moodChips").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-pmood]"); if (!b) return;
+  state.pick.mood = b.dataset.pmood; renderPickerChips(); loadPicks();
 });
 
-syncSort();
-loadGames();
+/* Library controls */
+let searchTimer;
+const reload = () => loadLibrary(true);
+$("fSearch").addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(reload, 300); });
+$("fMood").addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(reload, 300); });
+for (const id of ["fPlatform", "fSort"]) $(id).addEventListener("change", reload);
+$("loadMore").addEventListener("click", () => loadLibrary(false));
+$("addBtn").addEventListener("click", () => openSheet());
+
+/* Settings */
+$("saveProfileBtn").addEventListener("click", saveProfile);
+$("syncBtn").addEventListener("click", syncSteam);
+$("previewBtn").addEventListener("click", previewSteam);
+$("showStartBtn").addEventListener("click", () => { lsSet(ukey("hideStart"), false); setView("today"); });
+
+/* Game sheet */
+$("gClose").addEventListener("click", closeSheet);
+$("gCancel").addEventListener("click", closeSheet);
+$("gSave").addEventListener("click", saveSheet);
+$("gDelete").addEventListener("click", deleteFromSheet);
+$("sAdd").addEventListener("click", addSession);
+$("sMore").addEventListener("click", () => loadSessions(false));
+$("gPlatform").addEventListener("change", syncPlatform);
+$("gProgress").addEventListener("input", () => { $("gProgLabel").textContent = $("gProgress").value + "%"; });
+$("gTypical").addEventListener("input", renderSheetChips);
+$("gNewTag").addEventListener("keydown", (e) => {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  const s = state.sheet; if (!s) return;
+  const tag = e.target.value.trim().toLowerCase();
+  if (!tag) return;
+  if (tag.length > 30) return toast("Mood tags are 30 characters max.", "error");
+  if (!s.tags.includes(tag)) {
+    if (s.tags.length >= 10) return toast("You can pick up to 10 moods.", "error");
+    s.tags.push(tag);
+  }
+  e.target.value = "";
+  renderSheetChips();
+});
+$("gameModal").addEventListener("click", async (e) => {
+  if (e.target === $("gameModal")) return closeSheet();
+  const s = state.sheet; if (!s) return;
+  const t = e.target.closest("button"); if (!t) return;
+  const d = t.dataset;
+  if (d.play) { s.play = d.play; renderSheetChips(); }
+  else if (d.acq) { s.acq = d.acq; renderSheetChips(); }
+  else if (d.prio) { s.prio = Number(d.prio); renderSheetChips(); }
+  else if (d.mood) {
+    if (s.tags.includes(d.mood)) s.tags = s.tags.filter(x => x !== d.mood);
+    else if (s.tags.length >= 10) return toast("You can pick up to 10 moods.", "error");
+    else s.tags.push(d.mood);
+    renderSheetChips();
+  }
+  else if (d.typ) { $("gTypical").value = $("gTypical").value === d.typ ? "" : d.typ; renderSheetChips(); }
+  else if (d.dur) { $("sDuration").value = d.dur; }
+  else if (d.delsess) {
+    try {
+      await api(`/sessions/${d.delsess}`, { method: "DELETE" });
+      toast("Session deleted.");
+      loadSessions(true); loadStats();
+    } catch (err) { toast(err.message, "error"); }
+  }
+});
+
+/* Quick setup */
+$("triClose").addEventListener("click", closeTriage);
+$("triageModal").addEventListener("click", (e) => {
+  if (e.target === $("triageModal")) return closeTriage();
+  const t = e.target.closest("button"); if (!t) return;
+  const d = t.dataset, T = state.tri;
+  if (d.tp) { T.priority = Number(d.tp); renderTriage(); }
+  else if (d.tm) {
+    if (T.tags.includes(d.tm)) T.tags = T.tags.filter(x => x !== d.tm);
+    else if (T.tags.length >= 10) return toast("You can pick up to 10 moods.", "error");
+    else T.tags.push(d.tm);
+    renderTriage();
+  }
+  else if (d.tt) { const n = Number(d.tt); T.typical = T.typical === n ? null : n; renderTriage(); }
+  else if (d.ta) triageAct(d.ta);
+});
+
+/* Overlay backdrop + Escape */
+$("helpModal").addEventListener("click", (e) => { if (e.target === $("helpModal")) closeOverlay("helpModal"); });
+$("confirmModal").addEventListener("click", (e) => { if (e.target === $("confirmModal") && $("confirmModal")._cancel) $("confirmModal")._cancel(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if ($("confirmModal").classList.contains("show")) { if ($("confirmModal")._cancel) $("confirmModal")._cancel(); }
+  else if ($("gameModal").classList.contains("show")) closeSheet();
+  else if ($("triageModal").classList.contains("show")) closeTriage();
+  else if ($("helpModal").classList.contains("show")) closeOverlay("helpModal");
+});
+
+/* Global delegated actions */
+document.addEventListener("click", (e) => {
+  const open = e.target.closest("[data-open]");
+  if (open) return openById(open.dataset.open);
+  const tab = e.target.closest("[data-tab]");
+  if (tab) { state.lib.tab = tab.dataset.tab; renderTabs(); return setView("library"); }
+  const go = e.target.closest("[data-gotab]");
+  if (go) { state.lib.tab = go.dataset.gotab; return setView("library"); }
+  const act = e.target.closest("[data-act]");
+  if (!act) return;
+  switch (act.dataset.act) {
+    case "start": return startPlaying(act.dataset.id);
+    case "log": return openById(act.dataset.id, true);
+    case "skip": {
+      const P = state.pick;
+      if (P.items.length < 2) return toast("That's the only game that fits right now.", "warn");
+      P.idx = (P.idx + 1) % P.items.length; return renderPick();
+    }
+    case "manual": return openSheet();
+    case "sync": return syncSteam();
+    case "triage": return openTriage();
+    case "settings": return setView("settings");
+    case "help": return openOverlay("helpModal");
+    case "hide": lsSet(ukey("hideStart"), true); return renderStart();
+  }
+});
+
+/* Cover images that fail to load fall back to the generated placeholder */
+document.addEventListener("error", (e) => {
+  const t = e.target;
+  if (t && t.tagName === "IMG" && t.closest(".cv")) t.remove();
+}, true);
+
+/* ---------- Init ---------- */
+(async function init() {
+  try {
+    const res = await fetch(API + "/config");
+    if (!res.ok) throw new Error("config");
+    const cfg = await res.json();
+    state.sb = window.supabase.createClient(cfg.supabase_url, cfg.supabase_publishable_key);
+  } catch (_) {
+    $("loginView").hidden = false;
+    $("loginError").textContent = "Could not load app configuration. Try again later.";
+    $("loginBtn").disabled = true;
+    return;
+  }
+  // Do not call other supabase methods inside this callback (can deadlock the SDK).
+  state.sb.auth.onAuthStateChange((event) => { if (event === "SIGNED_OUT") showLogin(); });
+  const { data } = await state.sb.auth.getSession();
+  if (data.session) enterApp(); else showLogin();
+})();
 </script>
 </body>
 </html>

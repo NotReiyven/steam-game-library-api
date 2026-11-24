@@ -3,22 +3,10 @@
 
 def main() -> None:
     print("Connecting to Supabase...")
-
     try:
-        supabase = get_supabase_client()
-
-        response = (
-            supabase
-            .table("library_games")
-            .select("*")
-            .limit(5)
-            .execute()
-        )
-
+        response = get_supabase_client().table("profiles").select("id, display_name").limit(5).execute()
         print("Supabase connection successful!")
-        print(f"Records retrieved: {len(response.data)}")
-        print(f"Returned data: {response.data}")
-
+        print(f"Profiles retrieved: {len(response.data)}")
     except Exception as error:
         print("Supabase connection or query failed.")
         print(f"Error: {error}")
