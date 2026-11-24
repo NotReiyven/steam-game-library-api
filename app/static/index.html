@@ -3,20 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101a24">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0b1218">
   <meta name="description" content="Backlog Compass — your Steam library, organised around what you want to play next.">
   <title>Backlog Compass</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.akamai.steamstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css">
   <script type="module" src="/static/app.js"></script>
 </head>
 <body>
-  <div id="app" aria-live="polite">
-    <div class="boot-screen">
-      <div class="brand-mark brand-mark--large"><span class="brand-mark__glyph">B</span></div>
-      <div class="boot-title">BACKLOG COMPASS</div>
+  <div id="app">
+    <div class="boot-screen" role="status" aria-live="polite">
+      <div class="brand-mark brand-mark--large" aria-hidden="true"><span class="brand-mark__glyph">B</span></div>
+      <div class="boot-title" translate="no">BACKLOG COMPASS</div>
       <div class="boot-copy">Starting your library…</div>
     </div>
   </div>
